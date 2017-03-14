@@ -1,3 +1,4 @@
+import numpy
 
 def get_topics(vocab_file, lambda_file, n):
 
