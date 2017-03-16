@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from sklearn import manifold
+from sklearn.decomposition import PCA
 
 from pywsd import disambiguate
 
@@ -47,22 +48,33 @@ def wordnet_distances(synsets):
 
     return word_dists
 
-def visualize_distance_matrix(dists):
+def visualize_distance_matrix(dists, topic_lengths):
 
-    nmds = manifold.MDS(n_components=2, metric=False, max_iter=3000, eps=1e-12,
-                        dissimilarity="precomputed", random_state=666, n_jobs=-1)
+    nmds = manifold.MDS(n_components=2, metric=False, max_iter=10000, eps=1e-25,
+                        dissimilarity="precomputed", n_jobs=-1, n_init=10)
     points = nmds.fit(dists).embedding_
+    #clf = PCA(n_components=2)
+    #points = clf.fit_transform(points)
+    print points
 
-    plt.scatter(points[:, 0], points[:, 1], lw=0)
+    coloring = []
+    num_topics = len(topic_lengths)
+    for i in range(num_topics):
+        coloring += [(i+1.0) / (num_topics + 1.0)] * topic_lengths[i]
+
+    plt.figure()
+    plt.scatter(points[:, 0], points[:, 1], c=coloring, lw=0)
     plt.show()
 
 def visualize_topics(topics):
-    synset_set = set()
+    all_synsets = []
+    topic_lengths = []
     for topic in topics:
         words = [w[0] for w in topic]
         synsets = get_synsets(words)
-        for synset in synsets:
-            synset_set.add(synset)
-    dists = wordnet_distances(list(synset_set))
-    visualize_distance_matrix(dists)
+        topic_lengths.append(len(synsets))
+        all_synsets += synsets
+        
+    dists = wordnet_distances(all_synsets)
+    visualize_distance_matrix(dists, topic_lengths)
     return dists
