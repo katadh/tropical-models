@@ -6,30 +6,11 @@ from nltk import word_tokenize, pos_tag
 from pywsd import disambiguate
 from pywsd.similarity import max_similarity
 
-def stripArticleName(pair):
-	name = pair[1]
-	art = pair[0]
-	l = len(name)
-
-	if art[:l+2] == name + '  ':
-		art = art[l+2:] #also remove initial spaces
-
-	return (art, name)
-
-def tagPOS(string):
-	# still TODO: use n-gram taggers rather than just the default here;
-	# experiment with other POS tagging packages rather than NLTK default
-	text = word_tokenize(unicode(string))
-	#print text
-	tagged = pos_tag(text)
-	return tagged
-
 def WSD(article):
-	# it looks like we will have to translate the POS tags generated above
-	#   to the ones lesk likes.
-	# potentially after turning unicode back to normal string format.
-	# after that, just iterate through all words in each sentence to get the sense
-	#   and then return the word from the resulting synset -- synset.name()
+	# takes in an article string and outputs a disambiguated article string
+	# throws away any words not found in WordNet
+	# often changes the word itself -- e.g. disambiguating "involving" in one case yielded "necessitate.v.01"
+	# always changes inflected forms of verbs and nouns to the base form
 	new_art_string = ''
 	art_sents = article.split('.')
 	for sent in art_sents:
@@ -44,9 +25,27 @@ def WSD(article):
 		new_art_string += sent_str + '.'
 	return new_art_string
 
+def stripArticleName(pair):
+	# strips off article name from front of article text
+	# maybe irrelevant
+	name = pair[1]
+	art = pair[0]
+	l = len(name)
+	if art[:l+2] == name + '  ':
+		art = art[l+2:] #also remove initial spaces
+	return (art, name)
+
+def tagPOS(string):
+	# basically irrelevant. 
+	# if we want to use this, consider using n-gram taggers rather than just the default here;
+	# and/or experiment with other POS tagging packages rather than NLTK default
+	text = word_tokenize(unicode(string))
+	tagged = pos_tag(text)
+	return tagged
+
 if __name__ == '__main__':
 	from wiki_local import get_random_wikipedia_article
 	art_pair = stripArticleName(get_random_wikipedia_article())
-	#tagged = tagPOS(art_pair[0])
+	# tagged = tagPOS(art_pair[0])
 	new_article = WSD(art_pair[0])
 	# print(new_article)
