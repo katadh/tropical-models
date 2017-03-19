@@ -3,6 +3,7 @@ from nltk.corpus import wordnet as wn
 import numpy as np
 
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from sklearn import manifold
 from sklearn.decomposition import PCA
@@ -43,14 +44,14 @@ def wordnet_distances(synsets):
             if sim is None:
                 print "syn1: " + str(synsets[i]) + " syn2: " + str(synsets[j])
                 continue
-            word_dists[i, j] = 1.0 / sim
-            word_dists[j, i] = 1.0 / sim
+            word_dists[i, j] = 1.0 - sim
+            word_dists[j, i] = 1.0 - sim
 
     return word_dists
 
 def visualize_distance_matrix(dists, topic_lengths):
 
-    nmds = manifold.MDS(n_components=2, metric=False, max_iter=10000, eps=1e-25,
+    nmds = manifold.MDS(n_components=3, metric=False, max_iter=10000, eps=1e-25,
                         dissimilarity="precomputed", n_jobs=-1, n_init=10)
     points = nmds.fit(dists).embedding_
     #clf = PCA(n_components=2)
@@ -62,8 +63,9 @@ def visualize_distance_matrix(dists, topic_lengths):
     for i in range(num_topics):
         coloring += [(i+1.0) / (num_topics + 1.0)] * topic_lengths[i]
 
-    plt.figure()
-    plt.scatter(points[:, 0], points[:, 1], c=coloring, lw=0)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=coloring, lw=0)
     plt.show()
 
 def visualize_topics(topics):
