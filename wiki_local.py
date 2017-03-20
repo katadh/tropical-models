@@ -33,9 +33,14 @@ class WikiThread(threading.Thread):
     def run(self):
         (article, articlename) = get_random_wikipedia_article()
         WikiThread.lock.acquire()
-        article = wsd.WSD(article)
-        WikiThread.articles.append(article)
-        WikiThread.articlenames.append(articlename)
+        try:
+            article = wsd.WSD(article)
+            WikiThread.articles.append(article)
+            WikiThread.articlenames.append(articlename)
+        except Exception as ex: #catch and print message for basically anything that's not a system error or keyboard interrupt
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print message
         WikiThread.lock.release()
 
 def get_random_wikipedia_articles(n):

@@ -19,11 +19,11 @@ def WSD(article):
 			continue
                 sent = sent.strip()
 		#print sent
-		disamb_sent = disambiguate(sent)
+		disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='wup', keepLemmas=False)
 		for pair in disamb_sent:
 			if pair[1] is not None:
 				sent_str += ' ' + pair[1].name()
-		new_art_string += sent_str + '.'
+		new_art_string += sent_str
 	return new_art_string
 
 def stripArticleName(pair):
@@ -44,9 +44,9 @@ def tagPOS(string):
 	tagged = pos_tag(text)
 	return tagged
 
-#if __name__ == '__main__':
-#	from wiki_local import get_random_wikipedia_article
-#	art_pair = stripArticleName(get_random_wikipedia_article())
-#	# tagged = tagPOS(art_pair[0])
-#	new_article = WSD(art_pair[0])
-#	# print(new_article)
+if __name__ == '__main__':
+	from wiki_local import get_random_wikipedia_article
+	art_pair = stripArticleName(get_random_wikipedia_article())
+	# tagged = tagPOS(art_pair[0])
+	new_article = WSD(art_pair[0])
+	print(new_article)
