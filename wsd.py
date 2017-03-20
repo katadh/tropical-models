@@ -17,7 +17,8 @@ def WSD(article):
 		sent_str = ''
 		if sent == '\n':
 			continue
-		print sent
+                sent = sent.strip()
+		#print sent
 		disamb_sent = disambiguate(sent)
 		for pair in disamb_sent:
 			if pair[1] is not None:
@@ -43,9 +44,9 @@ def tagPOS(string):
 	tagged = pos_tag(text)
 	return tagged
 
-if __name__ == '__main__':
-	from wiki_local import get_random_wikipedia_article
-	art_pair = stripArticleName(get_random_wikipedia_article())
-	# tagged = tagPOS(art_pair[0])
-	new_article = WSD(art_pair[0])
-	# print(new_article)
+#if __name__ == '__main__':
+#	from wiki_local import get_random_wikipedia_article
+#	art_pair = stripArticleName(get_random_wikipedia_article())
+#	# tagged = tagPOS(art_pair[0])
+#	new_article = WSD(art_pair[0])
+#	# print(new_article)

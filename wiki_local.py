@@ -5,6 +5,8 @@ import random
 import json
 import re
 
+import wsd
+
 def get_random_wikipedia_article():
     wiki_path = "../json_articles/"
     rand_folder = random.choice(os.listdir(wiki_path))
@@ -13,9 +15,14 @@ def get_random_wikipedia_article():
     f = open(wiki_path+rand_folder+'/'+rand_file)
 
     article = json.loads(random.choice(f.readlines()))
-    title = article['title'].encode('utf-8')
-    text = article['text'].encode('utf-8')
+    title = article['title'].encode('ascii', 'ignore')
+    text = article['text'].encode('ascii', 'ignore')
     text = re.sub(r'\n', ' ', text)
+    text = re.sub(r'[^A-z .]+', '', text)
+    #text = re.sub(r' +', ' ', text)
+    #print text
+    #print text
+    #text = wsd.WSD(text)
     return (text, title)
 
 class WikiThread(threading.Thread):
@@ -26,6 +33,7 @@ class WikiThread(threading.Thread):
     def run(self):
         (article, articlename) = get_random_wikipedia_article()
         WikiThread.lock.acquire()
+        article = wsd.WSD(article)
         WikiThread.articles.append(article)
         WikiThread.articlenames.append(articlename)
         WikiThread.lock.release()

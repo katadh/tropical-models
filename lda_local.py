@@ -18,6 +18,8 @@
 
 import cPickle, string, numpy, getopt, sys, random, time, re, pprint
 
+from nltk.corpus import wordnet as wn
+
 import onlineldavb
 import wiki_local
 
@@ -26,7 +28,7 @@ def main():
     Downloads and analyzes a bunch of random Wikipedia articles using
     online VB for LDA.
     """
-
+    wn.ensure_loaded()
     # The number of documents to analyze each iteration
     batchsize = 64
     # The total number of documents in Wikipedia
