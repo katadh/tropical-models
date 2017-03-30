@@ -29,6 +29,7 @@ def main():
     online VB for LDA.
     """
     wn.ensure_loaded()
+    wiki_pool = wiki_local.WikiPool()
     # The number of documents to analyze each iteration
     batchsize = 64
     # The total number of documents in Wikipedia
@@ -43,17 +44,19 @@ def main():
         documentstoanalyze = int(sys.argv[1])
 
     # Our vocabulary
-    vocab = file('./dictnostops.txt').readlines()
+    #vocab = file('./dictnostops.txt').readlines()
+    vocab = file('./wordnet_nouns.txt').readlines()
     W = len(vocab)
 
     # Initialize the algorithm with alpha=1/K, eta=1/K, tau_0=1024, kappa=0.7
     olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7)
+
     # Run until we've seen D documents. (Feel free to interrupt *much*
     # sooner than this.)
     for iteration in range(0, documentstoanalyze):
         # Download some articles
         (docset, articlenames) = \
-            wiki_local.get_random_wikipedia_articles(batchsize)
+            wiki_pool.get_random_wikipedia_articles(batchsize)
         # Give them to online LDA
         (gamma, bound) = olda.update_lambda_docs(docset)
         # Compute an estimate of held-out perplexity
@@ -67,8 +70,8 @@ def main():
         # distributions over topic weights for the articles analyzed in
         # the last iteration.
         if (iteration % 10 == 0):
-            numpy.savetxt('lambda-%d.dat' % iteration, olda._lambda)
-            numpy.savetxt('gamma-%d.dat' % iteration, gamma)
+            numpy.savetxt('data3/lambda-%d.dat' % iteration, olda._lambda)
+            numpy.savetxt('data3/gamma-%d.dat' % iteration, gamma)
 
 if __name__ == '__main__':
     main()

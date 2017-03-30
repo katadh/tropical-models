@@ -4,12 +4,14 @@ import os
 import random
 import json
 import re
+import time
 
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue, Process
 
 import wsd
 
-def get_random_wikipedia_article(dummy_input):
+def get_random_wikipedia_article():
+    #print "getting article"
     wiki_path = "../json_articles/"
     rand_folder = random.choice(os.listdir(wiki_path))
     rand_file = random.choice(os.listdir(wiki_path+rand_folder))
@@ -25,6 +27,7 @@ def get_random_wikipedia_article(dummy_input):
     #print text
     #print text
     text = wsd.WSD(text)
+    #queue.put((text, title))
     return (text, title)
 
 #class WikiThread(threading.Thread):
@@ -45,30 +48,86 @@ def get_random_wikipedia_article(dummy_input):
 #            print message
 #        WikiThread.lock.release()
 
-def get_random_wikipedia_articles(n):
+class WikiPool():
 
-    print "getting wiki articles"
-    pool = Pool(processes=8)
+    def __init__(self):
+        self.q = Queue()
+        self.p = Process(target=self.start)
+        self.p_count = 0
+        self.run = True
+        self.p.start()
 
-    dummy_inputs = [''] * n
-    article_title_pairs = pool.map(get_random_wikipedia_article, dummy_inputs)
+    def end(self):
+        self.run = False
+        self.p.join()
+        
+    def get_random_wikipedia_articles(self, n):
+        articles = []
+        titles = []
+        print "getting articles"
+        for i in range(n):
+            article, title = self.q.get()
+            articles.append(article)
+            titles.append(title)
+        print "finished getting articles"
+        return (articles, titles)
 
-    articles = [pair[0] for pair in article_title_pairs]
-    titles = [pair[1] for pair in article_title_pairs]
+    def append_to_queue(self, result):
+        self.p_count -= 1
+        self.q.put(result)
+        #print result
+        return
 
-    print "finished getting wiki articles, timespent"
-
-    return (articles, titles)
+    def start(self):
     
-    ##maxthreads = 8
-    ##WikiThread.articles = list()
-    ##WikiThread.articlenames = list()
-    ##wtlist = list()
-    ##for i in range(0, n, maxthreads):
-    ##    print 'downloaded %d/%d articles...' % (i, n)
-    ##    for j in range(i, min(i+maxthreads, n)):
-    ##        wtlist.append(WikiThread())
-    ##        wtlist[len(wtlist)-1].start()
-    ##    for j in range(i, min(i+maxthreads, n)):
-    ##        wtlist[j].join()
-    ##return (WikiThread.articles, WikiThread.articlenames)
+        #print "getting wiki articles"
+        pool = Pool(processes=8)
+
+        while self.run:
+            if self.p_count < 16:
+                #print "starting process"
+                self.p_count += 1
+                pool.apply_async(get_random_wikipedia_article, callback=self.append_to_queue)
+            else:
+                #print "sleeping"
+                time.sleep(5)
+                
+            #results = [pool.apply_async(get_random_wikipedia_article) for i in range(64)]
+            #if self.run:
+            #    for res in results:
+            #        #print "adding to queue"
+            #        self.q.put(res.get())
+            #    print "got 64 articles"
+
+        pool.close()
+        pool.join()
+        
+        #articles = []
+        #titles = []
+        #for res in results:
+        #    article, title = res.get()
+        #    articles.append(article)
+        #    titles.append(title)
+
+        #pool.close()
+        #pool.join()
+
+        ##articles = [pair[0] for pair in article_title_pairs]
+        ##titles = [pair[1] for pair in article_title_pairs]
+
+        #print "finished getting wiki articles"
+
+        #return (articles, titles)
+
+        ##maxthreads = 8
+        ##WikiThread.articles = list()
+        ##WikiThread.articlenames = list()
+        ##wtlist = list()
+        ##for i in range(0, n, maxthreads):
+        ##    print 'downloaded %d/%d articles...' % (i, n)
+        ##    for j in range(i, min(i+maxthreads, n)):
+        ##        wtlist.append(WikiThread())
+        ##        wtlist[len(wtlist)-1].start()
+        ##    for j in range(i, min(i+maxthreads, n)):
+        ##        wtlist[j].join()
+        ##return (WikiThread.articles, WikiThread.articlenames)
