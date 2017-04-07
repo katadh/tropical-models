@@ -39,5 +39,7 @@ def handler(files = [fn]):
 			big_cat = key
 	print "the biggest category is %s with %d items" % (big_cat, biggest)
 
+	return cat_dict
+
 if __name__ == "__main__": 
 	handler()
