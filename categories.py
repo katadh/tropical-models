@@ -1,6 +1,6 @@
-# extract all categories from a wiki dump
-# count em
-# and track articles they come from
+# extract all categories from a wiki dump, e.g. from https://en.wikipedia.org/wiki/Special:Export
+# track articles they come from
+# and count em
 
 fn = "/Users/kristen/Box Sync/Semantics/Wikipedia-20170407184627.xml"
 
@@ -23,13 +23,13 @@ def scan_file(fn, cat_dict):
 					cat_dict[cat].append(curr_id)
 				else:
 					cat_dict[cat] = [curr_id]
-					print "added %s to dict" % cat
+					#print "added %s to dict" % cat
 
 def handler(files = [fn]):
 	cat_dict = dict()
 	for filename in files:
 		scan_file(filename, cat_dict)
-	print cat_dict
+	#print cat_dict
 
 	biggest = 0
 	big_cat = None
