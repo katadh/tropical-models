@@ -8,9 +8,11 @@ import time
 
 from multiprocessing import Pool, Queue, Process
 
+from nltk.corpus import wordnet_ic as wnic
+
 import wsd
 
-def get_random_wikipedia_article():
+def get_random_wikipedia_article(sim_data):
     #print "getting article"
     wiki_path = "../json_articles/"
     rand_folder = random.choice(os.listdir(wiki_path))
@@ -23,11 +25,9 @@ def get_random_wikipedia_article():
     text = article['text'].encode('ascii', 'ignore')
     text = re.sub(r'\n', ' ', text)
     text = re.sub(r'[^A-z .]+', '', text)
-    #text = re.sub(r' +', ' ', text)
+    text = re.sub(r' +', ' ', text)
     #print text
-    #print text
-    text = wsd.WSD(text)
-    #queue.put((text, title))
+    #text = wsd.WSD(text, sim_data)
     return (text, title)
 
 #class WikiThread(threading.Thread):
@@ -51,6 +51,7 @@ def get_random_wikipedia_article():
 class WikiPool():
 
     def __init__(self):
+        self.sim_data = wnic.ic('ic-bnc-add1.dat')
         self.q = Queue()
         self.p = Process(target=self.start)
         self.p_count = 0
@@ -69,7 +70,8 @@ class WikiPool():
             article, title = self.q.get()
             articles.append(article)
             titles.append(title)
-        print "finished getting articles"
+        print "finished getting articles:", len(titles)
+        #print articles[1]
         return (articles, titles)
 
     def append_to_queue(self, result):
@@ -87,10 +89,10 @@ class WikiPool():
             if self.p_count < 16:
                 #print "starting process"
                 self.p_count += 1
-                pool.apply_async(get_random_wikipedia_article, callback=self.append_to_queue)
+                pool.apply_async(get_random_wikipedia_article, args=(self.sim_data,), callback=self.append_to_queue)
             else:
                 #print "sleeping"
-                time.sleep(5)
+                time.sleep(1)
                 
             #results = [pool.apply_async(get_random_wikipedia_article) for i in range(64)]
             #if self.run:

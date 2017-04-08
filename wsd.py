@@ -6,7 +6,7 @@ from nltk import word_tokenize, pos_tag
 from pywsd import disambiguate
 from pywsd.similarity import max_similarity
 
-def WSD(article):
+def WSD(article, data=None):
 	# takes in an article string and outputs a disambiguated article string
 	# throws away any words not found in WordNet
 	# often changes the word itself -- e.g. disambiguating "involving" in one case yielded "necessitate.v.01"
@@ -19,7 +19,11 @@ def WSD(article):
 			continue
                 sent = sent.strip()
 		#print sent
-		disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='wup', keepLemmas=False)
+                if data == None:
+		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False)
+                else:
+		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=data)
+                        
 		for pair in disamb_sent:
 			if pair[1] is not None:
 				sent_str += ' ' + pair[1].name()
