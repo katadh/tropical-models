@@ -1,4 +1,5 @@
 from nltk.corpus import wordnet as wn
+from nltk.corpus import wordnet_ic as wnic
 
 import numpy as np
 
@@ -8,16 +9,17 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn import manifold
 from sklearn.decomposition import PCA
 
-from pywsd import disambiguate
+from allwords_wsd import disambiguate
+from similarity import max_similarity
 
 import get_topics
 
 # just doing some rudimentary disambiguation wsd so we can see some results
-def get_synsets(words, disambiguated):
+def get_synsets(words, disambiguated, data=None):
     if disambiguated:
         return get_synsets_from_labels(words)
     else:
-        return get_synsets_from_words(words)
+        return get_synsets_from_words(words, data)
 
 def get_synsets_from_labels(labels):
     synsets = []
@@ -26,16 +28,20 @@ def get_synsets_from_labels(labels):
 
     return synsets
 
-def get_synsets_from_words(words):
+def get_synsets_from_words(words, data=None):
     sent = ' '.join(words)
-    result = disambiguate(sent)
+    if data == None:
+        result = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=wnic.ic('ic-bnc-add1.dat'))
+    else:
+        result = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
+    #print result
 
     synsets = []
     for tup in result:
         synset = tup[1]
         if synset is not None:
             if synset.pos() == 'n':
-                synsets.append(tup[1])
+                synsets.append(synset)
 
     return synsets
 
@@ -49,16 +55,18 @@ def get_synsets_from_words(words):
 
 #We want an actual matrix in order to use sklearn MDS
 def wordnet_distances(synsets):
+    print "calculating distances"
     word_dists = np.zeros(len(synsets)**2, dtype='float64').reshape(len(synsets), len(synsets))
 
+    sim_data = wnic.ic('ic-bnc-add1.dat')
     for i in range(len(synsets)):
         for j in range(i+1, len(synsets)):
-            sim = wn.path_similarity(synsets[i], synsets[j], simulate_root=True)
+            sim = wn.jcn_similarity(synsets[i], synsets[j], sim_data)
             if sim is None:
                 print "syn1: " + str(synsets[i]) + " syn2: " + str(synsets[j])
                 continue
-            word_dists[i, j] = 1.0 - sim
-            word_dists[j, i] = 1.0 - sim
+            word_dists[i, j] = 1.0e+300 - sim
+            word_dists[j, i] = 1.0e+300 - sim
 
     return word_dists
 
@@ -69,7 +77,7 @@ def visualize_distance_matrix3d(dists, topic_lengths):
     points = nmds.fit(dists).embedding_
     #clf = PCA(n_components=2)
     #points = clf.fit_transform(points)
-    print points
+    #print points
 
     coloring = []
     num_topics = len(topic_lengths)
@@ -89,7 +97,7 @@ def visualize_distance_matrix(dists, topic_lengths):
     points = nmds.fit(dists).embedding_
     #clf = PCA(n_components=2)
     #points = clf.fit_transform(points)
-    print points
+    #print points
 
     coloring = []
     num_topics = len(topic_lengths)
@@ -104,42 +112,47 @@ def visualize_distance_matrix(dists, topic_lengths):
 def visualize_topics(topics, dim=2, disambiguated=False):
     all_synsets = []
     topic_lengths = []
+    sim_data = wnic.ic('ic-bnc-add1.dat')
     for topic in topics:
         words = [w[0] for w in topic]
-        synsets = get_synsets(words, disambiguated)
+        synsets = get_synsets(words, disambiguated, data=sim_data)
+        print len(synsets)
         topic_lengths.append(len(synsets))
         all_synsets += synsets
         
     dists = wordnet_distances(all_synsets)
+    print dists.shape
     if dim == 3:
         visualize_distance_matrix3d(dists, topic_lengths)
     elif dim == 2:
         visualize_distance_matrix(dists, topic_lengths)
     return dists
 
-def avg_wn_dist_topic(topic, disambiguated):
+def avg_wn_dist_topic(topic, disambiguated, sim_data):
     words = [w[0] for w in topic]
-    synsets = get_synsets(words, disambiguated)
-
+    synsets = get_synsets(words, disambiguated, data=sim_data)
+    
     total_dist = 0.0
     for i in range(len(synsets)):
         for j in range(i+1, len(synsets)):
-            sim = wn.path_similarity(synsets[i], synsets[j])
+            sim = wn.jcn_similarity(synsets[i], synsets[j], sim_data)
             if sim is None:
                 print "syn1: " + str(synsets[i]) + " syn2: " + str(synsets[j])
                 continue
-            total_dist += 1.0 - sim
+            total_dist += 1.0e+300 - sim
 
     num_comparisons = (len(synsets) * (len(synsets) - 1) / 2.0)
     return total_dist / num_comparisons, num_comparisons
 
 def avg_wn_dist_topics(topics, disambiguated):
 
+    sim_data = wnic.ic('ic-bnc-add1.dat')
+
     #doing a weighted average based on the number of words we actually get the dist for
     averages = []
     num_samples = []
     for topic in topics:
-        average_dist, samples = avg_wn_dist_topic(topic, disambiguated)
+        average_dist, samples = avg_wn_dist_topic(topic, disambiguated, sim_data)
         #print average_dist
         averages.append(average_dist)
         num_samples.append(samples)
@@ -152,16 +165,17 @@ def avg_wn_dist_topics(topics, disambiguated):
     return total_average
 
 def avg_wn_dist_dict(dict_file, disambiguated):
+    sim_data = wnic.ic('ic-bnc-add1.dat')
     
     words = file(dict_file).readlines()
-    synsets = get_synsets(words, disambiguated)
+    synsets = get_synsets(words, disambiguated, data=sim_data)
 
     total_dist = 0.0
     num_synsets = len(synsets) / 3
     for i in range(num_synsets):
         for j in range(i+1, num_synsets):
-            sim = wn.path_similarity(synsets[i], synsets[j])
-            total_dist += 1.0 - sim
+            sim = wn.jcn_similarity(synsets[i], synsets[j], sim_data)
+            total_dist += 1.0e+300 - sim
             
     return total_dist / (num_synsets * (num_synsets - 1) / 2.0)
 

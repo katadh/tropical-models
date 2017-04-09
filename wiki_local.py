@@ -8,11 +8,25 @@ import time
 
 from multiprocessing import Pool, Queue, Process
 
+from nltk.corpus import wordnet_ic as wnic
+
 import wsd
 
-def get_random_wikipedia_article():
+def get_wikipedia_article(file_path, sim_data):
+    with open(file_path) as f:
+        article = json.loads(random.choice(f.readlines()))
+        title = article['title'].encode('ascii', 'ignore')
+        text = article['text'].encode('ascii', 'ignore')
+        text = re.sub(r'\n', ' ', text)
+        text = re.sub(r'[^A-z .]+', '', text)
+        text = re.sub(r' +', ' ', text)
+        #print text
+        #text = wsd.WSD(text, sim_data)
+        return (text, title)
+
+def get_random_wikipedia_article(sim_data):
     #print "getting article"
-    wiki_path = "../json_articles/"
+    wiki_path = "../json_all_pages/"
     rand_folder = random.choice(os.listdir(wiki_path))
     rand_file = random.choice(os.listdir(wiki_path+rand_folder))
 
@@ -23,11 +37,9 @@ def get_random_wikipedia_article():
     text = article['text'].encode('ascii', 'ignore')
     text = re.sub(r'\n', ' ', text)
     text = re.sub(r'[^A-z .]+', '', text)
-    #text = re.sub(r' +', ' ', text)
+    text = re.sub(r' +', ' ', text)
     #print text
-    #print text
-    text = wsd.WSD(text)
-    #queue.put((text, title))
+    #text = wsd.WSD(text, sim_data)
     return (text, title)
 
 #class WikiThread(threading.Thread):
@@ -51,8 +63,10 @@ def get_random_wikipedia_article():
 class WikiPool():
 
     def __init__(self):
+        self.sim_data = wnic.ic('ic-bnc-add1.dat')
         self.q = Queue()
-        self.p = Process(target=self.start)
+        self.p = Process(target=self.start_random)
+        #self.p = Process(target=self.start_sequential)
         self.p_count = 0
         self.run = True
         self.p.start()
@@ -69,7 +83,8 @@ class WikiPool():
             article, title = self.q.get()
             articles.append(article)
             titles.append(title)
-        print "finished getting articles"
+        print "finished getting articles:", len(titles)
+        #print articles[1]
         return (articles, titles)
 
     def append_to_queue(self, result):
@@ -78,7 +93,19 @@ class WikiPool():
         #print result
         return
 
-    def start(self):
+    def start_sequential(self):
+
+        pool = Pool(processes=8)
+
+        wiki_path = '../wiki_subset/'
+        for folder in os.listdir(wiki_path):
+            for file_name in os.list_dir(wiki_path + folder):
+                while self.p_count >= 16:
+                    time.sleep(1)
+                self.p_count += 1
+                pool.apply_async(get_wikipedia_article, args=(wiki_path+folder+'/'+file_name, self.sim_data), callback=self.append_to_queue)
+
+    def start_random(self):
     
         #print "getting wiki articles"
         pool = Pool(processes=8)
@@ -87,10 +114,10 @@ class WikiPool():
             if self.p_count < 16:
                 #print "starting process"
                 self.p_count += 1
-                pool.apply_async(get_random_wikipedia_article, callback=self.append_to_queue)
+                pool.apply_async(get_random_wikipedia_article, args=(self.sim_data,), callback=self.append_to_queue)
             else:
                 #print "sleeping"
-                time.sleep(5)
+                time.sleep(1)
                 
             #results = [pool.apply_async(get_random_wikipedia_article) for i in range(64)]
             #if self.run:
