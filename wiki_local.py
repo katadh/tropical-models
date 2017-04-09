@@ -12,9 +12,21 @@ from nltk.corpus import wordnet_ic as wnic
 
 import wsd
 
+def get_wikipedia_article(file_path, sim_data):
+    with open(file_path) as f:
+        article = json.loads(random.choice(f.readlines()))
+        title = article['title'].encode('ascii', 'ignore')
+        text = article['text'].encode('ascii', 'ignore')
+        text = re.sub(r'\n', ' ', text)
+        text = re.sub(r'[^A-z .]+', '', text)
+        text = re.sub(r' +', ' ', text)
+        #print text
+        #text = wsd.WSD(text, sim_data)
+        return (text, title)
+
 def get_random_wikipedia_article(sim_data):
     #print "getting article"
-    wiki_path = "../json_articles/"
+    wiki_path = "../json_all_pages/"
     rand_folder = random.choice(os.listdir(wiki_path))
     rand_file = random.choice(os.listdir(wiki_path+rand_folder))
 
@@ -53,7 +65,8 @@ class WikiPool():
     def __init__(self):
         self.sim_data = wnic.ic('ic-bnc-add1.dat')
         self.q = Queue()
-        self.p = Process(target=self.start)
+        self.p = Process(target=self.start_random)
+        #self.p = Process(target=self.start_sequential)
         self.p_count = 0
         self.run = True
         self.p.start()
@@ -80,7 +93,19 @@ class WikiPool():
         #print result
         return
 
-    def start(self):
+    def start_sequential(self):
+
+        pool = Pool(processes=8)
+
+        wiki_path = '../wiki_subset/'
+        for folder in os.listdir(wiki_path):
+            for file_name in os.list_dir(wiki_path + folder):
+                while self.p_count >= 16:
+                    time.sleep(1)
+                self.p_count += 1
+                pool.apply_async(get_wikipedia_article, args=(wiki_path+folder+'/'+file_name, self.sim_data), callback=self.append_to_queue)
+
+    def start_random(self):
     
         #print "getting wiki articles"
         pool = Pool(processes=8)
