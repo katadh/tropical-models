@@ -2,11 +2,14 @@
 # then throw away the tags and spit back an article with word senses disambiguated
 
 from nltk import word_tokenize, pos_tag
+from nltk.corpus import wordnet_ic as wnic
 #from nltk.wsd import lesk
-from pywsd import disambiguate
-from pywsd.similarity import max_similarity
+
+from allwords_wsd import disambiguate
+from similarity import max_similarity
 
 def WSD(article, data=None):
+        #print "disambiguating article"
 	# takes in an article string and outputs a disambiguated article string
 	# throws away any words not found in WordNet
 	# often changes the word itself -- e.g. disambiguating "involving" in one case yielded "necessitate.v.01"
@@ -19,10 +22,13 @@ def WSD(article, data=None):
 			continue
                 sent = sent.strip()
 		#print sent
+                disamb_sent = []
                 if data == None:
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False)
+		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
                 else:
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=data)
+                        #print "disambiguating sentence"
+		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
+                        #print "finished with sentence"
                         
 		for pair in disamb_sent:
 			if pair[1] is not None:

@@ -19,6 +19,7 @@
 import cPickle, string, numpy, getopt, sys, random, time, re, pprint
 
 from nltk.corpus import wordnet as wn
+from nltk.corpus import words
 
 import onlineldavb
 import wiki_local
@@ -45,8 +46,19 @@ def main():
 
     # Our vocabulary
     #vocab = file('./dictnostops.txt').readlines()
-    vocab = file('./wordnet_nouns.txt').readlines()
+    #vocab = file('./wordnet_nouns.txt').readlines()
+    vocab = file('./all-nltk-senses.txt').readlines()
+    #vocab = []
+    #for word in words.words():
+    #    word = str(word).lower()
+    #    word = re.sub(r'[^a-z]', '', word)
+    #    if word != '':
+    #        vocab.append(word)
+    ##we get repeats because of upper -> lowercase?
+    #vocab = set(vocab)
+    #vocab = list(vocab)
     W = len(vocab)
+    print W
 
     # Initialize the algorithm with alpha=1/K, eta=1/K, tau_0=1024, kappa=0.7
     olda = onlineldavb.OnlineLDA(vocab, K, D, 1./K, 1./K, 1024., 0.7)
@@ -69,9 +81,10 @@ def main():
         # over topics, and gamma, the parameters to the variational
         # distributions over topic weights for the articles analyzed in
         # the last iteration.
-        if (iteration % 10 == 0):
-            numpy.savetxt('data3/lambda-%d.dat' % iteration, olda._lambda)
-            numpy.savetxt('data3/gamma-%d.dat' % iteration, gamma)
+        if (iteration % 100 == 0):
+            numpy.savetxt('data6/lambda-%d.dat' % iteration, olda._lambda)
+            numpy.savetxt('data6/gamma-%d.dat' % iteration, gamma)
+    wiki_pool.end()
 
 if __name__ == '__main__':
     main()
