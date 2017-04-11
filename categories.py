@@ -1,6 +1,11 @@
 # extract all categories from a wiki dump, e.g. from https://en.wikipedia.org/wiki/Special:Export
 # track articles they come from
 # and count em
+from bs4 import BeautifulSoup as BSoup
+import urllib2
+import re
+
+import xml.etree.ElementTree as etree
 
 fn = "/Users/kristen/Box Sync/Semantics/Wikipedia-20170407184627.xml"
 
@@ -33,7 +38,7 @@ def handler(files = [fn]):
 	cat_dict = dict()
 	for filename in files:
 		scan_file(filename, cat_dict)
-	#print cat_dict
+	        #print cat_dict
 
 	biggest = 0
 	big_cat = None
@@ -41,9 +46,59 @@ def handler(files = [fn]):
 		if len(cat_dict[key]) > biggest:
 			biggest = len(cat_dict[key])
 			big_cat = key
-	print "the biggest category is %s with %d items" % (big_cat, biggest)
+	                print "the biggest category is %s with %d items" % (big_cat, biggest)
 
 	return cat_dict
+
+def create_cat_dict(xml_file):
+        cat_dict = {}
+	with open(xml_file) as f:
+		rightns = False
+                curr_title = ''
+		for line in f:
+			if line == "  <page>\n": #track whether we're on first ID in a new page
+				on_page = True
+                                rightns = False
+                        elif line.split('>')[0] == "    <title":
+                                curr_title = line.split('>')[1].split('<')[0]
+			elif line.split('>')[0] == "    <ns":
+				if line.split('>')[1].split('<')[0] == "14":
+					rightns = True
+                                        curr_title = curr_title.split(':')[1]
+                                        if curr_title not in cat_dict:
+                                                cat_dict[curr_title] = []
+                                        #print "title:", curr_title
+			elif rightns == True and line.split(':')[0] == "[[Category":
+				cat=line.split(':')[1].split(']')[0]
+				if '|' in cat:
+					cat = cat.split('|')[0]
+				if cat in cat_dict:
+					cat_dict[cat].append(curr_title)
+				else:
+					cat_dict[cat] = [curr_title]
+                return cat_dict
+        
+
+#wiki_base_url = 'https://en.wikipedia.org'
+#
+#def get_descendant_categories(url, level, subcats):
+#
+#    page = urllib2.urlopen(url)
+#    soup = BSoup(page.read(), "html5lib")
+#
+#    subcat_div = soup.find(id='mw-subcategories')
+#
+#    if subcat_div:
+#        child_cats = subcat_div.find_all('a',href=re.compile('/wiki/Category:.*'))
+#        for child_cat in child_cats:
+#            if child_cat.text not in subcats:
+#                #print child_cat.get('href')
+#                subcats.add(child_cat.text)
+#                print ' ' * level, level, child_cat.text, len(subcats)
+#                get_descendant_categories(wiki_base_url + child_cat.get('href'), level + 1, subcats)
+
+def get_descendant_categories(category, cat_dict):
+        return
 
 if __name__ == "__main__": 
 	handler()
