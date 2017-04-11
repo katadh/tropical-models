@@ -1,11 +1,11 @@
 # extract all categories from a wiki dump, e.g. from https://en.wikipedia.org/wiki/Special:Export
 # track articles they come from
 # and count em
-from bs4 import BeautifulSoup as BSoup
-import urllib2
-import re
 
-import xml.etree.ElementTree as etree
+from collections import deque
+
+import os
+import json
 
 fn = "/Users/kristen/Box Sync/Semantics/Wikipedia-20170407184627.xml"
 
@@ -97,8 +97,45 @@ def create_cat_dict(xml_file):
 #                print ' ' * level, level, child_cat.text, len(subcats)
 #                get_descendant_categories(wiki_base_url + child_cat.get('href'), level + 1, subcats)
 
-def get_descendant_categories(category, cat_dict):
-        return
+def get_descendant_categories(category, cat_dict, max_depth=float('Inf')):
+        descendant_cats = set()
 
+        cat_queue = deque()
+        cat_queue.append((category, 0))
+
+        while len(cat_queue) > 0:
+                next_cat, depth = cat_queue.popleft()
+                if next_cat not in descendant_cats:
+                        descendant_cats.add(next_cat)
+                        if (depth + 1) <= max_depth:
+                                for child_cat in cat_dict[next_cat]:
+                                        cat_queue.append((child_cat, depth + 1))
+        return descendant_cats
+
+def get_article_ids_in_categories(categories, cat_article_dict):
+        article_ids = set()
+
+        for cat in categories:
+                if cat in cat_article_dict:
+                        for article_id in cat_article_dict[cat]:
+                                article_ids.add(article_id)
+        return article_ids
+
+def pull_articles(article_ids, in_dir, out_path):
+        path_modifier = 0
+        open(out_path+str(path_modifier), 'a').close()
+        for folder in os.listdir(in_dir):
+                for file_name in os.listdir(in_dir+folder):
+                        if os.stat(out_path+str(path_modifier)).st_size > 3200000:
+                                path_modifier += 1
+                        with open(out_path+str(path_modifier), 'a') as out_file:
+                                with open(in_dir+folder+'/'+file_name) as article_file:
+                                        for article_line in article_file:
+                                                article = json.loads(article_line)
+                                                if article['id'] in article_ids:
+                                                        json.dump(article, out_file)
+                                                        out_file.write("\n")
+                                                        
+                                        
 if __name__ == "__main__": 
 	handler()
