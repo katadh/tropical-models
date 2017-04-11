@@ -20,7 +20,8 @@ def get_word_counts(text, vocab):
 def match_topic(word_counts, topic):
     score = 0
     for word in word_counts.keys():
-        score += word_count[word] * topic[word]
+        if word in topic:
+            score += word_count[word] * topic[word]
 
     return score
 
