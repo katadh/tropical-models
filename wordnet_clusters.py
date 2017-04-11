@@ -114,7 +114,7 @@ def visualize_topics(topics, dim=2, disambiguated=False):
     topic_lengths = []
     sim_data = wnic.ic('ic-bnc-add1.dat')
     for topic in topics:
-        words = [w[0] for w in topic]
+        words = topic.keys()
         synsets = get_synsets(words, disambiguated, data=sim_data)
         print len(synsets)
         topic_lengths.append(len(synsets))
