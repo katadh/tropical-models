@@ -4,17 +4,6 @@ path_to_dict_in = '/Users/kristen/Documents/Semantics/tropical-models/dictnostop
 new_dict_path = '/Users/kristen/Documents/Semantics/tropical-models/expanded-ldavb-7k-dict.txt'
 full_dict_path = '/Users/kristen/Documents/Semantics/tropical-models/all-nltk-senses.txt'
 
-def get_all_senses(out_path):
-        all_senses = set()
-        for word in words.words():
-                for synset in wordnet.synsets(word):
-                        all_senses.add(synset.name())
-
-        with  open(outpath, 'w') as out_file:
-                for sense in all_senses:
-                        out_file.write(sense + '\n')
-
-
 def addLemmas(inname = path_to_dict_in, outname = new_dict_path):
 	lines = []
 	with open(inname) as f:
