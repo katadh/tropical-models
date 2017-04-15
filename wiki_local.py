@@ -14,17 +14,23 @@ import wsd
 
 def get_wikipedia_articles_in_file(file_path, sim_data):
     results = []
+    #print "opening:", file_path
     with open(file_path) as f:
         for article_line in f:
             article = json.loads(article_line)
             title = article['title'].encode('ascii', 'ignore')
+            #print title
             text = article['text'].encode('ascii', 'ignore')
-            text = re.sub(r'\n', ' ', text)
-            text = re.sub(r'[^A-z .]+', '', text)
-            text = re.sub(r' +', ' ', text)
+            text = text.lower()
+            text = re.sub(r'[\n\- ]+', ' ', text)
+            text = re.sub(r'[^a-z .]+', '', text)
+            #text = re.sub(r' +', ' ', text)
+            text = re.sub(r'[ .]+\.', '.', text)
             #print text
             text = wsd.WSD(text, data=sim_data)
             results.append((text, title))
+            #print "finished article"
+    #print "returning results"
     return results
 
 def get_random_wikipedia_article(sim_data):
@@ -51,10 +57,10 @@ class WikiPool():
     def __init__(self):
         self.sim_data = wnic.ic('ic-bnc-add1.dat')
         self.q = Queue()
-        self.p = Process(target=self.start_random)
-        #self.p = Process(target=self.start_sequential)
-        self.p_count = 0
         self.run = True
+        #self.p = Process(target=self.start_random)
+        self.p = Process(target=self.start_sequential)
+        self.p_count = 0
         self.p.start()
 
     def end(self):
@@ -64,12 +70,12 @@ class WikiPool():
     def get_random_wikipedia_articles(self, n):
         articles = []
         titles = []
-        print "getting articles"
+        #print "getting articles"
         for i in range(n):
             article, title = self.q.get()
             articles.append(article)
             titles.append(title)
-        print "finished getting articles:", len(titles)
+        #print "finished getting articles:", titles
         return (articles, titles)
 
     def append_to_queue(self, result):
@@ -78,22 +84,33 @@ class WikiPool():
         #print result
 
     def append_multiple_to_queue(self, results):
+        #print "appending to queue"
         self.p_count -= 1
         for result in results:
             self.q.put(result)
 
     def start_sequential(self):
-
+        print "starting sequential"
         pool = Pool(processes=8)
 
-        wiki_path = '../ecology_articles/'
-        for file_name in os.listdir(wiki_path):
-            while self.run:
-                if self.p_count >= 16:
-                    self.p_count += 1
-                    pool.apply_async(get_wikipedia_articles_in_file, args=(wiki_path+file_name, self.sim_data), callback=self.append_multiple_to_queue)
-                else:
-                    time.sleep(1)
+        wiki_path = '../ecology_articles2/'
+        file_names = os.listdir(wiki_path)
+        #print file_names
+        i = 0
+        while self.run:
+            #if self.p_count < 16 and self.q.qsize() < 264 and i < len(file_names):
+            if self.p_count < 16 and self.q.qsize() < 1280 and i < len(file_names):
+                self.p_count += 1
+                #print file_names[i]
+                pool.apply_async(get_wikipedia_articles_in_file, args=(wiki_path+file_names[i], self.sim_data), callback=self.append_multiple_to_queue)
+                i += 1
+            else:
+                #time.sleep(1)
+                time.sleep(5)
+
+        print "closing/joining pool"
+        pool.close()
+        pool.join()
                     
     def start_random(self):
     
