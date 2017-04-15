@@ -18,6 +18,7 @@ from utils import lemmatize, lemmatize_sentence
 
 """
 This is a module for all-words full text WSD
+(modified for use in tropical_models framework)
 
 This would involve:
 Step 1: First tokenize your text such that each token is separated by whitespace
@@ -48,6 +49,66 @@ def disambiguate(sentence, algorithm=simple_lesk,
                     synset = algorithm(lemma_sentence, lemma, pos=pos, context_is_lemmatized=True)
             except: # In case the content word is not in WordNet
                 synset = '#NOT_IN_WN#'
+        else:
+            synset = '#STOPWORD/PUNCTUATION#'
+        if keepLemmas:
+            tagged_sentence.append((word, lemma, synset))
+        else:
+            tagged_sentence.append((word, synset))
+    # Change #NOT_IN_WN# and #STOPWORD/PUNCTUATION# into None.
+    if prefersNone and not keepLemmas:
+        tagged_sentence = [(word, None) if str(tag).startswith('#')
+                           else (word, tag) for word, tag in tagged_sentence]
+    if prefersNone and keepLemmas:
+        tagged_sentence = [(word, lemma, None) if str(tag).startswith('#')
+                           else (word, lemma, tag) for word, lemma, tag in tagged_sentence]
+    return tagged_sentence
+
+
+def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
+                 context_is_lemmatized=False, similarity_option='path',
+                 keepLemmas=False, prefersNone=True, similarity_data=None):
+    # adds option of extra words, e.g. from LDA output, though not required
+    # also checks if a word has 0 or 1 synsets, and doesn't run WSD in those cases
+    tagged_sentence = []
+    # Pre-lemmatize the sentence before WSD
+    if not context_is_lemmatized:
+        surface_words, lemmas, morphy_poss = lemmatize_sentence(sentence, keepWordPOS=True)
+        lemma_sentence = " ".join(lemmas)
+    else:
+        lemma_sentence = sentence # TODO: Miss out on POS specification, how to resolve?
+    if extra_words:
+        # print("changing sentence to add LDA words:")
+        # print(lemma_sentence)
+        lemma_sentence = lemma_sentence.rstrip('.') + ' ' + " ".join(extra_words) + '.'
+        # print(lemma_sentence)
+    for word, lemma, pos in zip(surface_words, lemmas, morphy_poss):
+        if lemma not in stopwords: # Checks if it is a content word
+            try:
+                # print("just started the try with %s" % lemma)
+                syns = wn.synsets(lemma)
+                # print("synsets are %s" % syns)
+                if len(syns) == 0:
+                    # print("no synsets for %s; returning None" % lemma)
+                    synset = None
+                elif len(syns) == 1:
+                    # print("just one synset for %s; returning %s" % (lemma, syns[0]))
+                    synset = syns[0]
+                elif algorithm == original_lesk: # Note: Original doesn't care about lemmas
+                    # print("running original_lesk on %s" % lemma)
+                    synset = algorithm(lemma_sentence, lemma)
+                    # print("succeeded; returning %s" % synset)
+                elif algorithm == max_similarity:
+                    print("running max_similarity on %s" % lemma)
+                    synset = algorithm(lemma_sentence, lemma, pos=pos, option=similarity_option, data=similarity_data)
+                    # print("succeeded; returning %s" % synset)
+                else:
+                    # print("running alg %s on %s" % (algorithm.__name__, lemma))
+                    synset = algorithm(lemma_sentence, lemma, pos=pos, context_is_lemmatized=True)
+                    # print("succeeded; returning %s" % synset)
+            except: # In case the content word is not in WordNet
+                synset = '#NOT_IN_WN#'
+                print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
         else:
             synset = '#STOPWORD/PUNCTUATION#'
         if keepLemmas:

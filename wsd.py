@@ -5,7 +5,7 @@ from nltk import word_tokenize, pos_tag
 from nltk.corpus import wordnet_ic as wnic
 #from nltk.wsd import lesk
 
-from allwords_wsd import disambiguate
+from allwords_wsd import disambiguate_new
 from similarity import max_similarity
 
 def WSD(article, data=None):
@@ -24,10 +24,10 @@ def WSD(article, data=None):
 		#print sent
                 disamb_sent = []
                 if data == None:
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
+		        disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
                 else:
                         #print "disambiguating sentence"
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
+		        disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
                         #print "finished with sentence"
                         
 		for pair in disamb_sent:
@@ -56,7 +56,7 @@ def tagPOS(string):
 
 if __name__ == '__main__':
 	from wiki_local import get_random_wikipedia_article
-	art_pair = stripArticleName(get_random_wikipedia_article())
+	art_pair = stripArticleName(get_random_wikipedia_article(1))
 	# tagged = tagPOS(art_pair[0])
 	new_article = WSD(art_pair[0])
 	print(new_article)
