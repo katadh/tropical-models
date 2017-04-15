@@ -16,26 +16,35 @@ def WSD(article, data=None):
 	# always changes inflected forms of verbs and nouns to the base form
 	new_art_string = ''
 	art_sents = article.split('.')
+        #print "num sents:", len(art_sents)
 	for sent in art_sents:
-		sent_str = ''
-		if sent == '\n':
-			continue
-                sent = sent.strip()
-		#print sent
-                disamb_sent = []
-                if data == None:
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
-                else:
-                        #print "disambiguating sentence"
-		        disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
-                        #print "finished with sentence"
-                        
+                try:
+                        sent_str = disambig_sent(sent, data)
+                except IndexError:
+                        sent_str = ''
+		new_art_string += sent_str
+	return new_art_string[1:]
+
+def disambig_sent(sent, data):
+        #print sent
+	sent_str = ''
+	if sent == '\n':
+		return ''
+        sent = sent.strip()
+	#print sent
+        disamb_sent = []
+        if data == None:
+		disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
+        else:
+                #print "disambiguating sentence"
+		disamb_sent = disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
+                #print "finished with sentence"
+                
 		for pair in disamb_sent:
 			if pair[1] is not None:
 				sent_str += ' ' + pair[1].name()
-		new_art_string += sent_str
-	return new_art_string
-
+        return sent_str
+                                
 def stripArticleName(pair):
 	# strips off article name from front of article text
 	# maybe irrelevant
