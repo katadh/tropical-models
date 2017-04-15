@@ -123,6 +123,7 @@ def get_article_ids_in_categories(categories, cat_article_dict):
 
 def pull_articles(article_ids, in_dir, out_path):
         path_modifier = 0
+        articles_pulled = 0
         open(out_path+str(path_modifier), 'a').close()
         for folder in os.listdir(in_dir):
                 for file_name in os.listdir(in_dir+folder):
@@ -133,8 +134,10 @@ def pull_articles(article_ids, in_dir, out_path):
                                         for article_line in article_file:
                                                 article = json.loads(article_line)
                                                 if article['id'] in article_ids:
+                                                        articles_pulled += 1
                                                         json.dump(article, out_file)
                                                         out_file.write("\n")
+        return articles_pulled
                                                         
                                         
 if __name__ == "__main__": 
