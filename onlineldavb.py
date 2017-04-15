@@ -66,10 +66,10 @@ def parse_doc_list(docs, vocab):
     wordids = list()
     wordcts = list()
     for d in range(0, D):
-        docs[d] = docs[d].lower()
-        docs[d] = re.sub(r'-', ' ', docs[d])
-        docs[d] = re.sub(r'[^a-z ]', '', docs[d])
-        docs[d] = re.sub(r' +', ' ', docs[d])
+        #docs[d] = docs[d].lower()
+        #docs[d] = re.sub(r'-', ' ', docs[d])
+        #docs[d] = re.sub(r'[^a-z ]', '', docs[d])
+        #docs[d] = re.sub(r' +', ' ', docs[d])
         words = string.split(docs[d])
         ddict = dict()
         for word in words:
@@ -110,7 +110,7 @@ class OnlineLDA:
         self._vocab = dict()
         for word in vocab:
             word = word.lower()
-            word = re.sub(r'[^a-z]', '', word)
+            word = re.sub(r'[^a-z.0-9]', '', word)
             self._vocab[word] = len(self._vocab)
 
         self._K = K
@@ -141,7 +141,7 @@ class OnlineLDA:
         it = 0
         meanchange = 0
         for d in range(0, batchD):
-            print sum(wordcts[d])
+            #print sum(wordcts[d])
             # These are mostly just shorthand (but might help cache locality)
             ids = wordids[d]
             cts = wordcts[d]
@@ -160,7 +160,7 @@ class OnlineLDA:
                 # the update for gamma gives this update. Cf. Lee&Seung 2001.
                 gammad = self._alpha + expElogthetad * \
                     n.dot(cts / phinorm, expElogbetad.T)
-                print gammad[:, n.newaxis]
+                #print gammad[:, n.newaxis]
                 Elogthetad = dirichlet_expectation(gammad)
                 expElogthetad = n.exp(Elogthetad)
                 phinorm = n.dot(expElogthetad, expElogbetad) + 1e-100
@@ -462,7 +462,7 @@ def main():
     model = OnlineLDA(vocab, K, 100000,
                       0.1, 0.01, 1, 0.75)
     for i in range(1000):
-        print i
+        #print i
         wordids = [d.words for d in docs.docs[(i*S):((i+1)*S)]]
         wordcts = [d.counts for d in docs.docs[(i*S):((i+1)*S)]]
         model.update_lambda(wordids, wordcts)
