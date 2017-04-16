@@ -1,4 +1,5 @@
 from nltk.corpus import words
+from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 path_to_dict_in = '/Users/kristen/Documents/Semantics/tropical-models/dictnostops.txt'
 new_dict_path = '/Users/kristen/Documents/Semantics/tropical-models/expanded-ldavb-7k-dict.txt'
@@ -13,6 +14,17 @@ def get_all_senses(out_path):
         with  open(outpath, 'w') as out_file:
                 for sense in all_senses:
                         out_file.write(sense + '\n')
+        return all_senses
+
+def get_all_ambig_words(out_path):
+        stop = set(stopwords.words('english'))
+        words = [w for w.lower() in words.words() if len(wn.synset(w)) > 0 and w not in stop]
+        words = set(words)
+
+        with open(out_path, 'w') as out_file:
+                for word in word_set:
+                        out_file.write(word + '\n')
+        return word_set
 
 
 def addLemmas(inname = path_to_dict_in, outname = new_dict_path):
