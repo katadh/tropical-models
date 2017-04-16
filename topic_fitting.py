@@ -8,20 +8,21 @@ def get_word_counts(text, vocab):
     text = re.sub(r' +', ' ', text)
 
     word_counts = {}
-    words = string.split(text)
+    words = text.split()
     for word in words:
         if word in vocab:
             if word in word_counts:
                 word_counts[word] += 1
             else:
-                word_words[word] = 1
+                word_counts[word] = 1
+    return word_counts
 
                 
 def match_topic(word_counts, topic):
     score = 0
     for word in word_counts.keys():
         if word in topic:
-            score += word_count[word] * topic[word]
+            score += word_counts[word] * topic[word]
 
     return score
 
@@ -38,3 +39,9 @@ def find_closest_topic(text, vocab, topics):
             best_match_value = topic_score
 
     return best_match
+
+def get_n_best_words(n, topic):
+    reverse_dict = {value: key for key, value in topic.iteritems()}
+    highest_expts = sorted(reverse_dict.keys(), reverse=True)[:n]
+    words = [reverse_dict[expt] for expt in highest_expts]
+    return words
