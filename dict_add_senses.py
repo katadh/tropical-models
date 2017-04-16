@@ -7,18 +7,20 @@ full_dict_path = '/Users/kristen/Documents/Semantics/tropical-models/all-nltk-se
 
 def get_all_senses(out_path):
         all_senses = set()
+        stop = set(stopwords.words('english'))
         for word in words.words():
-                for synset in wordnet.synsets(word):
-                        all_senses.add(synset.name())
+                if word.lower() not in stop:
+                        for synset in wordnet.synsets(word.lower()):
+                                all_senses.add(synset.name())
 
-        with  open(outpath, 'w') as out_file:
+        with  open(out_path, 'w') as out_file:
                 for sense in all_senses:
                         out_file.write(sense + '\n')
         return all_senses
 
 def get_all_ambig_words(out_path):
         stop = set(stopwords.words('english'))
-        words = [w for w.lower() in words.words() if len(wn.synset(w)) > 0 and w not in stop]
+        words = [w.lower() for w in words.words() if len(wn.synset(w.lower())) > 0 and w.lower() not in stop]
         words = set(words)
 
         with open(out_path, 'w') as out_file:
