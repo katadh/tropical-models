@@ -1438,7 +1438,6 @@ inconsistent
 dieback
 aggressive
 uneventful
-recollect
 seminal
 reconciling
 natterjack
@@ -1535,7 +1534,6 @@ toroidal
 millionaire
 policed
 paring
-s
 threskiornithidae
 unflattering
 bakehouse
@@ -15865,7 +15863,6 @@ birth
 unique
 tambourine
 massively
-d
 spatterdock
 articulated
 designative
@@ -16428,7 +16425,6 @@ demosthenic
 petulant
 potter
 unchurch
-y
 holotype
 squatted
 habitation
@@ -16942,7 +16938,6 @@ al
 heathlike
 appositive
 behest
-as
 ar
 endoblast
 ax
@@ -19580,7 +19575,6 @@ victualer
 microbiology
 abettal
 hypnagogic
-vesiculation
 crenelation
 elucidative
 blamed
@@ -20923,7 +20917,7 @@ multinational
 lustily
 freeholder
 hidebound
-ma
+scoria
 hepper
 orchidaceae
 disorganize
@@ -21518,7 +21512,6 @@ madly
 preceptorship
 ester
 shah
-shan
 interpolation
 recommencement
 elephas
@@ -22508,7 +22501,6 @@ metatherian
 transaction
 reflection
 pseudechis
-i
 brutishly
 nonetheless
 flattop
@@ -27516,7 +27508,6 @@ briard
 pelecanidae
 junto
 overskirt
-no
 na
 retouch
 techy
@@ -35937,7 +35928,6 @@ miracle
 untangle
 zirbanit
 oblivion
-t
 ensile
 multiplicative
 viosterol
@@ -38545,12 +38535,11 @@ immunological
 padding
 mitigate
 euphemize
-don
 dol
 jacksnipe
 decasyllable
 alarm
-m
+mollusca
 dog
 dod
 doe
@@ -40490,7 +40479,6 @@ casuarinales
 apsidal
 slime
 infuse
-mollusca
 destructiveness
 deflective
 sill
@@ -41550,7 +41538,7 @@ lucifugous
 volunteer
 hypotension
 impalpable
-elkwood
+excusing
 billhook
 augusta
 sensationalistic
@@ -45370,7 +45358,6 @@ blepharitis
 senatorship
 phonologic
 sequencer
-scoria
 overpayment
 sacerdotalism
 pinworm
@@ -46513,7 +46500,7 @@ lackey
 coexistent
 grievously
 adipose
-o
+recollect
 riffraff
 instigative
 leverage
@@ -47538,7 +47525,7 @@ skink
 laminated
 mutableness
 navy
-excusing
+elkwood
 hoodlum
 neurohypophysis
 unhesitatingly
@@ -51542,7 +51529,7 @@ showily
 nutlike
 squeamishly
 hooliganism
-a
+vesiculation
 leptosporangiate
 deluge
 congregationalism
@@ -59090,7 +59077,6 @@ mistily
 canalize
 fluorspar
 domitian
-will
 euphorbiaceae
 advantageous
 apogamy

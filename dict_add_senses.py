@@ -20,8 +20,8 @@ def get_all_senses(out_path):
 
 def get_all_ambig_words(out_path):
         stop = set(stopwords.words('english'))
-        words = [w.lower() for w in words.words() if len(wn.synset(w.lower())) > 0 and w.lower() not in stop]
-        words = set(words)
+        dict_words = [w.lower() for w in words.words() if len(wordnet.synsets(w.lower())) > 0 and w.lower() not in stop]
+        word_set = set(dict_words)
 
         with open(out_path, 'w') as out_file:
                 for word in word_set:
