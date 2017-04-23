@@ -12,6 +12,11 @@ from nltk.corpus import wordnet_ic as wnic
 
 import wsd
 
+def get_precleaned_file(file_path):
+    with open(file_path) as f:
+        text = f.readline()
+        return (text, file_path)
+
 def get_wikipedia_articles_in_file(file_path, sim_data):
     results = []
     #print "opening:", file_path
@@ -27,7 +32,7 @@ def get_wikipedia_articles_in_file(file_path, sim_data):
             #text = re.sub(r' +', ' ', text)
             text = re.sub(r'[ .]+\.', '.', text)
             #print text
-            text = wsd.WSD(text, data=sim_data)
+            #text = wsd.WSD(text, data=sim_data)
             results.append((text, title))
             #print "finished article"
     #print "returning results"
@@ -93,7 +98,7 @@ class WikiPool():
         print "starting sequential"
         pool = Pool(processes=8)
 
-        wiki_path = '../ecology_articles2/'
+        wiki_path = '../ground_truth/disambig/'
         file_names = os.listdir(wiki_path)
         #print file_names
         i = 0
@@ -102,11 +107,12 @@ class WikiPool():
             if self.p_count < 16 and self.q.qsize() < 1280 and i < len(file_names):
                 self.p_count += 1
                 #print file_names[i]
-                pool.apply_async(get_wikipedia_articles_in_file, args=(wiki_path+file_names[i], self.sim_data), callback=self.append_multiple_to_queue)
+                #pool.apply_async(get_wikipedia_articles_in_file, args=(wiki_path+file_names[i], self.sim_data), callback=self.append_multiple_to_queue)
+                pool.apply_async(get_precleaned_file, args=(wiki_path+file_names[i],), callback=self.append_to_queue)
                 i += 1
             else:
-                #time.sleep(1)
-                time.sleep(5)
+                time.sleep(1)
+                #time.sleep(5)
 
         print "closing/joining pool"
         pool.close()

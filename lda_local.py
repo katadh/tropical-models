@@ -32,22 +32,24 @@ def main():
     wn.ensure_loaded()
     wiki_pool = wiki_local.WikiPool()
     # The number of documents to analyze each iteration
-    batchsize = 64
+    batchsize = 1
     # The total number of documents in Wikipedia
     D = 3.3e6
     # The number of topics
-    K = 100
+    K = 30
 
     # How many documents to look at
     if (len(sys.argv) < 2):
         documentstoanalyze = int(D/batchsize)
     else:
-        documentstoanalyze = int(sys.argv[1])
+        documentstoanalyze = int(sys.argv[1]) + 1
 
     # Our vocabulary
     #vocab = file('./dictnostops.txt').readlines()
     #vocab = file('./wordnet_nouns.txt').readlines()
-    vocab = file('./all-nltk-senses.txt').readlines()
+    #vocab = file('./synset_dict.txt').readlines()
+    #vocab = file('./wn_ambig_no_stop.txt').readlines()
+    vocab = file('./mixed_wn_dict.txt').readlines()
     #vocab = []
     #for word in words.words():
     #    word = str(word).lower()
@@ -81,9 +83,13 @@ def main():
         # over topics, and gamma, the parameters to the variational
         # distributions over topic weights for the articles analyzed in
         # the last iteration.
-        if (iteration % 100 == 0):
-            numpy.savetxt('data6/lambda-%d.dat' % iteration, olda._lambda)
-            numpy.savetxt('data6/gamma-%d.dat' % iteration, gamma)
+        if (iteration % 50 == 0):
+            numpy.savetxt('data_ground_truth_disambig/lambda-%d.dat' % iteration, olda._lambda)
+            numpy.savetxt('data_ground_truth_disambig/gamma-%d.dat' % iteration, gamma)
+    
+    numpy.savetxt('data_ground_truth_disambig/lambda-%d.dat' % iteration, olda._lambda)
+    numpy.savetxt('data_ground_truth_disambig/gamma-%d.dat' % iteration, gamma)
+    print "finished iterations"
     wiki_pool.end()
 
 if __name__ == '__main__':
