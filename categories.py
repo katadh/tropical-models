@@ -6,6 +6,7 @@ from collections import deque
 
 import os
 import json
+import pickle
 
 fn = "/Users/kristen/Box Sync/Semantics/Wikipedia-20170407184627.xml"
 
@@ -138,6 +139,15 @@ def pull_articles(article_ids, in_dir, out_path):
                                                         json.dump(article, out_file)
                                                         out_file.write("\n")
         return articles_pulled
+
+def load_object(file_path):
+        with open(file_path) as object_file:
+                return pickle.load(object_file)
+
+def save_object(file_path, in_object):
+        with open(file_path) as object_file:
+                pickle.dump(in_object, object_file)
+                
                                                         
                                         
 if __name__ == "__main__": 
