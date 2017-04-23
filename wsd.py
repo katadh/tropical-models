@@ -18,11 +18,11 @@ def WSD(article, data=None):
 	art_sents = article.split('.')
         #print "num sents:", len(art_sents)
 	for sent in art_sents:
-        try:
-                sent_str = disambig_sent(sent, data)
-        except IndexError:
-                sent_str = ''
-		new_art_string += sent_str
+                try:
+                        sent_str = disambig_sent(sent, data)
+                except IndexError:
+                        sent_str = ''
+		        new_art_string += sent_str
 	return new_art_string[1:]
 
 def disambig_sent(sent, data):
@@ -30,20 +30,20 @@ def disambig_sent(sent, data):
 	sent_str = ''
 	if sent == '\n':
 		return ''
-    sent = sent.strip()
+        sent = sent.strip()
 	#print sent
-    disamb_sent = []
-    if data == None:
-		disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
-    else:
-        #print "disambiguating sentence"
+        disamb_sent = []
+        if data == None:
+	        disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
+        else:
+            #print "disambiguating sentence"
 		disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
-        #print "finished with sentence"
+                #print "finished with sentence"
 		for pair in disamb_sent:
 			if pair[1] is not None:
 				sent_str += ' ' + pair[1].name()
         return sent_str
-                                
+
 def stripArticleName(pair):
 	# strips off article name from front of article text
 	# maybe irrelevant

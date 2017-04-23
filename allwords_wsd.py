@@ -108,7 +108,7 @@ def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
                     # print("succeeded; returning %s" % synset)
             except: # In case the content word is not in WordNet
                 synset = '#NOT_IN_WN#'
-                print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
+                #print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
         else:
             synset = '#STOPWORD/PUNCTUATION#'
         if keepLemmas:

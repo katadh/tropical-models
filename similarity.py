@@ -90,12 +90,12 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
     ambiguous words (see http://goo.gl/XMq2BI):
     {argmax}_{synset(a)}(\sum_{i}^{n}{{max}_{synset(i)}(sim(i,a))}
     """
-    print("inside max_similarity; running on %s" % ambiguous_word)
+    #print("inside max_similarity; running on %s" % ambiguous_word)
     ambiguous_word = lemmatize(ambiguous_word)
-    print("succeeded at lemmatizing")
+    #print("succeeded at lemmatizing")
     # If ambiguous word not in WordNet return None
     if not wn.synsets(ambiguous_word):
-        print("no synsets found in wordnet")
+        #print("no synsets found in wordnet")
         return None
     # print("its synsets are %s" % wn.synsets(ambiguous_word))
     if context_is_lemmatized:
@@ -105,13 +105,13 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
     result = {}
     for i in wn.synsets(ambiguous_word):
         try:
-            print("trying a try")
+            #print("trying a try")
             if pos and pos != str(i.pos()):
-                print("no pos found")
+                #print("no pos found")
                 continue
         except:
             if pos and pos != str(i.pos):
-                print("no pos found")
+                #print("no pos found")
                 continue
         result[i] = sum(max([sim(i,k,option,data) for k in wn.synsets(j)]+[0]) \
                         for j in context_sentence)

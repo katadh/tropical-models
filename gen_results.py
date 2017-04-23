@@ -26,8 +26,8 @@ def disambig_documents(doc_path, out_path):
     tree = et.parse(doc_path)
     root = tree.getroot()
 
-    vocab = get_vocab('wn_ambiguous.txt')
-    topics = get_topics.get_topics('wn_ambiguous.txt', '8000_ambiguous.dat', 150)
+    vocab = get_vocab('wn_ambig_no_stop.txt')
+    topics = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', 150)
 
     all_results = []
     for doc in root.findall('text'):
@@ -52,8 +52,9 @@ def disambig_document(doc, vocab, topics):
     for sent in sents:
         doc_text += ' ' + sent
 
+    extra_words = []
     best_topic = topic_fitting.find_closest_topic(doc_text, vocab, topics)
-    extra_words = topic_fitting.get_n_best_words(7, best_topic)
+    extra_words = topic_fitting.get_n_best_words(30, best_topic)
     print extra_words
 
     results = []
@@ -95,8 +96,8 @@ def get_sentence(sent_tree):
     return ' '.join(sentence), word_locs
 
 def disambiguate_sentence(sent, extras):
-    #return disambiguate(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=sim_data)
-    return disambiguate_new(sent, extra_words=extras)
+    return disambiguate_new(sent, extra_words=extras, algorithm=max_similarity, similarity_option='jcn', similarity_data=sim_data)
+    #return disambiguate_new(sent, extra_words=extras)
 
 #def disambiguate_sentence(sent):
 #    result = []
