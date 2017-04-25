@@ -86,7 +86,7 @@ def lemmatize(ambiguous_word, pos=None, neverstem=False,
         else:
             return stem
     else:
-     return lemma
+        return lemma
 
 
 def penn2morphy(penntag, returnNone=False):
@@ -121,7 +121,7 @@ def synset_properties(synset, parameter):
     return eval(func) if isinstance(eval(func), return_type) else eval(func)()
 
 def has_synset(word):
-    """" Returns a list of synsets a word after lemmatization """
+    """ Returns a list of synsets a word after lemmatization """
     return wn.synsets(lemmatize(word, neverstem=True))
 
 # To check default parameters of simple_lesk()

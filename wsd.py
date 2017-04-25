@@ -9,7 +9,7 @@ from allwords_wsd import disambiguate_new
 from similarity import max_similarity
 
 def WSD(article, data=None):
-        #print "disambiguating article"
+    # print "disambiguating article"
 	# takes in an article string and outputs a disambiguated article string
 	# throws away any words not found in WordNet
 	# often changes the word itself -- e.g. disambiguating "involving" in one case yielded "necessitate.v.01"
@@ -25,28 +25,25 @@ def WSD(article, data=None):
 		new_art_string += sent_str
 	return new_art_string[1:]
 
-def disambig_sent(sent, data):
+def disambig_sent(sent, data=None):
 	#print sent
 	sent_str = ''
 	if sent == '\n':
 		return ''
 	sent = sent.strip()
-	#print sent
 	disamb_sent = []
 	if data == None:
 		disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', keepLemmas=False, similarity_data=wnic.ic('ic-bnc-add1.dat'))
 	else:
-		#print "disambiguating sentence"
 		disamb_sent = disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=data)
-		#print "finished with sentence"
-		for pair in disamb_sent:
-			if pair[1] is not None:
-				sent_str += ' ' + pair[1].name()
-	return sent_str
+	for pair in disamb_sent:
+		if pair[1] is not None:
+			sent_str += ' ' + pair[1].name()
+	return sent_str[1:]+'.'
                                 
 def stripArticleName(pair):
 	# strips off article name from front of article text
-	# maybe irrelevant
+	# currently irrelevant
 	name = pair[1]
 	art = pair[0]
 	l = len(name)
@@ -64,7 +61,6 @@ def tagPOS(string):
 
 if __name__ == '__main__':
 	from wiki_local import get_random_wikipedia_article
-	art_pair = stripArticleName(get_random_wikipedia_article(1))
-	# tagged = tagPOS(art_pair[0])
+	art_pair = get_random_wikipedia_article(1)
 	new_article = WSD(art_pair[0])
 	print(new_article)
