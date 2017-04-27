@@ -1,5 +1,6 @@
 
 import re
+from nltk.corpus import wordnet as wn
 
 def get_word_counts(text, vocab):
     text = text.lower()
@@ -18,22 +19,27 @@ def get_word_counts(text, vocab):
     return word_counts
 
                 
-def match_topic(word_counts, topic):
+def match_topic(word_counts, topic, ambig):
     score = 0
     for word in word_counts.keys():
         if word in topic:
             score += word_counts[word] * topic[word]
+        elif not ambig:
+            synsets = wn.synsets(word)
+            for synset in synsets:
+                if synset.name() in topic:
+                    score += word_counts[word] * topic[word]
 
     return score
 
 
-def find_closest_topic(text, vocab, topics):
+def find_closest_topic(text, vocab, topics, ambig=True):
     word_counts = get_word_counts(text, vocab)
 
     best_match = {}
     best_match_value = 0
     for topic in topics:
-        topic_score = match_topic(word_counts, topic)
+        topic_score = match_topic(word_counts, topic, ambig)
         if topic_score > best_match_value:
             best_match = topic
             best_match_value = topic_score
