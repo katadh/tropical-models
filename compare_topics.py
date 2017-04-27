@@ -60,7 +60,8 @@ def add_synsets(list1):
 	return(new_list)
 
 def analyze_match_results():
-	list1 = get_topics.get_topics('wn_ambiguous.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
+	#list1 = get_topics.get_topics('wn_ambiguous.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
+	list1 = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
 	list2 = get_topics.get_topics('synset_dict.txt', '8000_jcn.dat', TOPIC_LEN)
 	# list1 = get_topics.get_topics('synset_dict.txt', 'comp1.dat', TOPIC_LEN)
 	# list2 = get_topics.get_topics('synset_dict.txt', 'sci_mod.dat', TOPIC_LEN)
