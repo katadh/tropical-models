@@ -2,8 +2,10 @@
 
 import get_topics
 from nltk.corpus import wordnet
-from numpy import average, median
+from numpy import average, median, log
 from math import sqrt
+
+import os
 
 TOPIC_LEN = 10
 
@@ -94,6 +96,36 @@ def analyze_match_results():
 	print("median overlap percentage between topics from the two sets provided was %f" % med)
 	ma = max(match_totals)
 	print("max overlap percentage between two topics was %f" % ma)
+
+def topic_coherence(topic_words, doc_freqs, doc_co_freqs):
+        coherence = 0
+        for i in range(len(topic_words)):
+                for j in range(i+1, len(topic_words)):
+                        coherence += log(doc_co_freqs[topic_words[i], topic_words[j]] * 1.0 / doc_freqs[topic_words[j]])
+
+        return coherence
+                        
+
+def document_freqs(corpus_path):
+        doc_freqs = {}
+        doc_co_freqs = {}
+        doc_names = os.listdir(corpus_path)
+        for doc_name in doc_names:
+                with open(corpus_path + '/' + doc_name) as doc:
+                        word_set = set([word for line in doc for word in line.split()])
+                        for word1 in word_set:
+                                if word1 in doc_freqs:
+                                        doc_freqs[word1] += 1
+                                else:
+                                        doc_freqs[word1] = 1
+                                for word2 in word_set:
+                                        if word1 != word2:
+                                                # purposely creating two keys per word pair (both orderings) to avoid double counts per doc
+                                                if (word1, word2) in doc_co_freqs:
+                                                        doc_co_freqs[word1, word2] += 1
+                                                else:
+                                                        doc_co_freqs[word1, word2] = 1
+        return doc_freqs, doc_co_freqs
 
 if __name__ == '__main__':
 	analyze_match_results()
