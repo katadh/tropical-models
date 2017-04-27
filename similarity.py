@@ -73,6 +73,8 @@ def similarity_by_infocontent(sense1, sense2, option, data):
 def sim(sense1, sense2, option="path", data=None):
     """ Calculates similarity based on user's choice. """
     option = option.lower()
+    if sense1 is 0 or sense2 is 0:
+        return 0
     if option.lower() in ["path", "path_similarity",
                         "wup", "wupa", "wu-palmer", "wu-palmer",
                         'lch', "leacock-chordorow"]:
@@ -90,12 +92,12 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
     ambiguous words (see http://goo.gl/XMq2BI):
     {argmax}_{synset(a)}(\sum_{i}^{n}{{max}_{synset(i)}(sim(i,a))}
     """
-    #print("inside max_similarity; running on %s" % ambiguous_word)
+    # print("inside max_similarity; running on %s" % ambiguous_word)
     ambiguous_word = lemmatize(ambiguous_word)
     #print("succeeded at lemmatizing")
     # If ambiguous word not in WordNet return None
     if not wn.synsets(ambiguous_word):
-        #print("no synsets found in wordnet")
+        # print("no synsets found in wordnet")
         return None
     # print("its synsets are %s" % wn.synsets(ambiguous_word))
     if context_is_lemmatized:
@@ -105,22 +107,44 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
     result = {}
     for i in wn.synsets(ambiguous_word):
         try:
-            #print("trying a try")
             if pos and pos != str(i.pos()):
-                #print("no pos found")
                 continue
         except:
             if pos and pos != str(i.pos):
-                #print("no pos found")
                 continue
-        result[i] = sum(max([sim(i,k,option,data) for k in wn.synsets(j)]+[0]) \
-                        for j in context_sentence)
+        res = 0
+        # CHANGE THE NEXT LINE INTO A FOR LOOP, checking for a '.' in j and doing wn.synset if so
+        # rather than wn.synsets
+        for j in context_sentence:
+            # print j
+            # print("comparing %s and %s" % (i, j))
+            try:
+                if '.' in j: # if j is already disambiguated
+                    # print wn.synset(j)
+                    mysynsets = [0, wn.synset(j)]
+                else:
+                    # print wn.synsets(j)
+                    mysynsets = wn.synsets(j) + [0]
+                # print("made it thru try")
+            except TypeError:
+                mysynsets = [0]
+            sims = []
+            for k in mysynsets:
+                sims.append(sim(i,k,option,data))
+            res += max(sims)
+            # res += max([sim(i,k,option,data) for k in mysynsets])
+        # result[i] = sum(max([sim(i,k,option,data) for k in wn.synsets(j)]+[0]) \
+                        # for j in context_sentence)
+        result[i] = res
 
+    # print("printing results")
+    # print result.items()
     if option in ["res","resnik"]: # lower score = more similar
         result = sorted([(v,k) for k,v in result.items()])
     else: # higher score = more similar
         result = sorted([(v,k) for k,v in result.items()],reverse=True)
-    ##print result
+    # print("sorted; printing results again")
+    # print result
     if best: return result[0][1];
     return result
 
