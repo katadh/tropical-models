@@ -22,6 +22,23 @@ def compare_two_topics(topic1, topic2):
 				matches += 1
 	return matches * 1./ TOPIC_LEN
 
+def compare_topic_sets_best_match(list1, list2):
+        best_matches = {}
+	for top1 in list1:
+		for top2 in list2:
+			m = compare_two_topics(top1, top2)
+                        if top1 in best_matches:
+                                if m > best_matches[top1]:
+                                        best_matches[top1] = m
+                        else:
+                                best_matches[top1] = m
+			# if m != 0:
+				# print("topics: %s\n %s" % (top1, top2))
+				# print("similarity score: %f" % m)
+			# if m > 0:
+				#print("got a non-zero score")
+	return best_matches.values()
+
 def compare_topic_sets(list1, list2):
 	match_totals = []
 	for top1 in list1:
@@ -67,9 +84,11 @@ def analyze_match_results():
 	# list2 = get_topics.get_topics('synset_dict.txt', 'sci_mod.dat', TOPIC_LEN)
 	#new_list2 = strip_synsets(list2)
 	newlist1 = add_synsets(list1)
-	match_totals = compare_topic_sets(newlist1, list2)
+	#match_totals = compare_topic_sets(newlist1, list2)
+	match_totals = compare_topic_sets_best_match(newlist1, list2)
 	print("length of match_totals is %d" % len(match_totals))
-	avg = average(match_totals) * sqrt(len(match_totals))
+	#avg = average(match_totals) * sqrt(len(match_totals))
+	avg = average(match_totals)
 	print("average overlap percentage between the two sets times number of topics per set was %f" % avg)
 	med = median(match_totals)
 	print("median overlap percentage between topics from the two sets provided was %f" % med)
