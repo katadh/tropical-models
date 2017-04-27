@@ -77,23 +77,20 @@ def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
         lemma_sentence = " ".join(lemmas)
     else:
         lemma_sentence = sentence # TODO: Miss out on POS specification, how to resolve?
-    print lemma_sentence
+    # print lemma_sentence
     if extra_words:
         # print("changing sentence to add LDA words:")
         # print(lemma_sentence)
-        lemma_sentence = lemma_sentence.rstrip('.') + ' ' + " ".join(extra_words) + '.'
+        lemma_sentence = lemma_sentence.rstrip('.') + ' ' + " ".join(extra_words)
         # print(lemma_sentence)
     for word, lemma, pos in zip(surface_words, lemmas, morphy_poss):
         if lemma not in stopwords: # Checks if it is a content word
             try:
-                if len(lemma.split('.')) > 1:
+                if '.' in lemma: # lemma is already disambiguated
                     synset = wn.synset(lemma)
-                    print("in synset lemma case")
-                # print("just started the try with %s" % lemma)
+                    # print("single synset for %s" % lemma)
                 else:
                     syns = wn.synsets(lemma)
-                    print("in else")
-                    # print("synsets are %s" % syns)
                     if len(syns) == 0:
                         # print("no synsets for %s; returning None" % lemma)
                         synset = None
@@ -107,14 +104,14 @@ def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
                     elif algorithm == max_similarity:
                         # print("running max_similarity on %s" % lemma)
                         synset = algorithm(lemma_sentence, lemma, pos=pos, option=similarity_option, data=similarity_data)
-                        # print("succeeded; returning %s" % synset)
+                        # print("succeeded at max_sim; returning %s" % synset)
                     else:
                         # print("running alg %s on %s" % (algorithm.__name__, lemma))
                         synset = algorithm(lemma_sentence, lemma, pos=pos, context_is_lemmatized=True)
                         # print("succeeded; returning %s" % synset)
             except: # In case the content word is not in WordNet
                 synset = '#NOT_IN_WN#'
-                #print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
+                # print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
         else:
             synset = '#STOPWORD/PUNCTUATION#'
         if keepLemmas:
