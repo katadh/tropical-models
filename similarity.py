@@ -92,9 +92,7 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
     ambiguous words (see http://goo.gl/XMq2BI):
     {argmax}_{synset(a)}(\sum_{i}^{n}{{max}_{synset(i)}(sim(i,a))}
     """
-    # print("inside max_similarity; running on %s" % ambiguous_word)
     ambiguous_word = lemmatize(ambiguous_word)
-    #print("succeeded at lemmatizing")
     # If ambiguous word not in WordNet return None
     if not wn.synsets(ambiguous_word):
         # print("no synsets found in wordnet")
@@ -104,6 +102,7 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
         context_sentence = word_tokenize(context_sentence)
     else:
         context_sentence = [lemmatize(w) for w in word_tokenize(context_sentence)]
+    print context_sentence
     result = {}
     for i in wn.synsets(ambiguous_word):
         try:
@@ -113,20 +112,12 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
             if pos and pos != str(i.pos):
                 continue
         res = 0
-        # CHANGE THE NEXT LINE INTO A FOR LOOP, checking for a '.' in j and doing wn.synset if so
-        # rather than wn.synsets
         for j in context_sentence:
-            # print j
-            # print("comparing %s and %s" % (i, j))
-            try:
-                if '.' in j: # if j is already disambiguated
-                    # print wn.synset(j)
-                    mysynsets = [0, wn.synset(j)]
-                else:
-                    # print wn.synsets(j)
-                    mysynsets = wn.synsets(j) + [0]
-                # print("made it thru try")
-            except TypeError:
+            if '.' in j and j is not '.': # if j is already disambiguated
+                mysynsets = [0, wn.synset(j)]
+            elif j is not '.':
+                mysynsets = wn.synsets(j) + [0]
+            else:
                 mysynsets = [0]
             sims = []
             for k in mysynsets:
