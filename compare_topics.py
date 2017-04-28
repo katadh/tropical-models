@@ -97,34 +97,39 @@ def analyze_match_results():
 	ma = max(match_totals)
 	print("max overlap percentage between two topics was %f" % ma)
 
-def topic_coherence(topic_words, doc_freqs, doc_co_freqs):
+def topic_coherence(topic_words, corpus_path):
         coherence = 0
+        #not enough memory to compute all document co frequencies ahead of time
+        doc_freqs, doc_co_freqs = document_freqs(topic_words, corpus_path)
         for i in range(len(topic_words)):
                 for j in range(i+1, len(topic_words)):
-                        coherence += log(doc_co_freqs[topic_words[i], topic_words[j]] * 1.0 / doc_freqs[topic_words[j]])
+                        coherence += log(doc_co_freqs[frozenset([topic_words[i], topic_words[j]])] * 1.0 / doc_freqs[topic_words[j]])
 
         return coherence
                         
 
-def document_freqs(corpus_path):
+def document_freqs(topic_words, corpus_path):
         doc_freqs = {}
         doc_co_freqs = {}
+        topic_words = set(topic_words)
         doc_names = os.listdir(corpus_path)
         for doc_name in doc_names:
                 with open(corpus_path + '/' + doc_name) as doc:
-                        word_set = set([word for line in doc for word in line.split()])
-                        for word1 in word_set:
-                                if word1 in doc_freqs:
-                                        doc_freqs[word1] += 1
-                                else:
-                                        doc_freqs[word1] = 1
-                                for word2 in word_set:
-                                        if word1 != word2:
-                                                # purposely creating two keys per word pair (both orderings) to avoid double counts per doc
-                                                if (word1, word2) in doc_co_freqs:
-                                                        doc_co_freqs[word1, word2] += 1
+                        print len(doc_freqs)
+                        print len(doc_co_freqs)
+                        words = list(set([word for line in doc for word in line.split()]))
+                        for i in range(len(words)):
+                                if words[i] in topic_words:
+                                        if words[i] in doc_freqs:
+                                                doc_freqs[words[i]] += 1
+                                        else:
+                                                doc_freqs[words[i]] = 1
+                                for j in range(i+1, len(words)):
+                                        if words[i] != words[j] and words[i] in topic_words and words[j] in topic_words:
+                                                if frozenset([words[i], words[j]]) in doc_co_freqs:
+                                                        doc_co_freqs[frozenset([words[i], words[j]])] += 1
                                                 else:
-                                                        doc_co_freqs[word1, word2] = 1
+                                                        doc_co_freqs[frozenset([words[i], words[j]])] = 1
         return doc_freqs, doc_co_freqs
 
 if __name__ == '__main__':
