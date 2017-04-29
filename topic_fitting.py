@@ -26,9 +26,11 @@ def match_topic(word_counts, topic, ambig):
             score += word_counts[word] * topic[word]
         elif not ambig:
             synsets = wn.synsets(word)
+            synset_scores = []
             for synset in synsets:
                 if synset.name() in topic:
-                    score += word_counts[word] * topic[word]
+                    synset_scores.append(word_counts[word] * topic[word])
+            score += max(synset_scores)
 
     return score
 

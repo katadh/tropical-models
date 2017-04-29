@@ -114,12 +114,12 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
         res = 0
         for j in context_sentence:
             if '.' in j and j is not '.': # if j is already disambiguated
-                mysynsets = [0, wn.synset(j)]
+                mysynsets = [wn.synset(j)]
             elif j is not '.':
-                mysynsets = wn.synsets(j) + [0]
+                mysynsets = wn.synsets(j)
             else:
-                mysynsets = [0]
-            sims = []
+                mysynsets = []
+            sims = [0]
             for k in mysynsets:
                 sims.append(sim(i,k,option,data))
             res += max(sims)
