@@ -102,7 +102,7 @@ def max_similarity(context_sentence, ambiguous_word, option="path",
         context_sentence = word_tokenize(context_sentence)
     else:
         context_sentence = [lemmatize(w) for w in word_tokenize(context_sentence)]
-    print context_sentence
+    #print context_sentence
     result = {}
     for i in wn.synsets(ambiguous_word):
         try:
