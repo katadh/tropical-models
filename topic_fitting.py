@@ -22,15 +22,15 @@ def get_word_counts(text, vocab):
 def match_topic(word_counts, topic, ambig):
     score = 0
     for word in word_counts.keys():
+        word_scores = [0]
         if word in topic:
-            score += word_counts[word] * topic[word]
-        elif not ambig:
+            word_scores.append(word_counts[word] * topic[word])
+        if not ambig:
             synsets = wn.synsets(word)
-            synset_scores = []
             for synset in synsets:
                 if synset.name() in topic:
-                    synset_scores.append(word_counts[word] * topic[word])
-            score += max(synset_scores)
+                    word_scores.append(word_counts[word] * topic[synset.name()])
+        score += max(word_scores)
 
     return score
 
