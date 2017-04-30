@@ -27,18 +27,20 @@ def compare_two_topics(topic1, topic2):
 def compare_topic_sets_best_match(list1, list2):
     best_matches = {}
     for top1 in list1:
+        # print("top1:", top1)
         for top2 in list2:
+            # print(top2)
             m = compare_two_topics(top1, top2)
-            if top1 in best_matches:
-                if m > best_matches[top1]:
-                    best_matches[top1] = m
-                else:
-                    best_matches[top1] = m
+            if tuple(top1.items()) in best_matches.keys():
+                if m > best_matches[tuple(top1.items())]:
+                    best_matches[tuple(top1.items())] = m
+            else:
+                best_matches[tuple(top1.items())] = m
             # if m != 0:
-                # print("topics: %s\n %s" % (top1, top2))
-                # print("similarity score: %f" % m)
+            #   print("topics: %s\n %s" % (top1, top2))
+            #   print("similarity score: %f" % m)
             # if m > 0:
-                #print("got a non-zero score")
+            #   print("got a non-zero score")
     return best_matches.values()
 
 def compare_topic_sets(list1, list2):
@@ -78,20 +80,24 @@ def add_synsets(list1):
         # print("into this topic:\n%s \n\n\n" % newtop)
     return(new_list)
 
-def analyze_match_results():
+def analyze_match_results(list1=None, list2=None):
     #list1 = get_topics.get_topics('wn_ambiguous.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
-    list1 = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
-    list2 = get_topics.get_topics('synset_dict.txt', '8000_jcn.dat', TOPIC_LEN)
+    if list1 is None:
+        list1 = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
+        list1 = add_synsets(list1)
+    if list2 is None:
+        list2 = get_topics.get_topics('synset_dict.txt', '8000_jcn.dat', TOPIC_LEN)
     # list1 = get_topics.get_topics('synset_dict.txt', 'comp1.dat', TOPIC_LEN)
     # list2 = get_topics.get_topics('synset_dict.txt', 'sci_mod.dat', TOPIC_LEN)
     #new_list2 = strip_synsets(list2)
-    newlist1 = add_synsets(list1)
     #match_totals = compare_topic_sets(newlist1, list2)
-    match_totals = compare_topic_sets_best_match(newlist1, list2)
+    list2 = add_synsets(list2)
+    match_totals = compare_topic_sets_best_match(list1, list2)
     print("length of match_totals is %d" % len(match_totals))
+    # print(match_totals)
     #avg = average(match_totals) * sqrt(len(match_totals))
     avg = average(match_totals)
-    print("average overlap percentage between the two sets times number of topics per set was %f" % avg)
+    print("average best match percentage between the two sets times number of topics per set was %f" % avg)
     med = median(match_totals)
     print("median overlap percentage between topics from the two sets provided was %f" % med)
     ma = max(match_totals)
@@ -145,7 +151,7 @@ def document_freqs(topic_words, corpus_path):
                     if words[i] in doc_freqs:
                         doc_freqs[words[i]] += 1
                     else:   
-                            doc_freqs[words[i]] = 1
+                        doc_freqs[words[i]] = 1
                 for j in range(i+1, len(words)):
                     if words[i] != words[j] and words[i] in topic_words and words[j] in topic_words:
                         if frozenset([words[i], words[j]]) in doc_co_freqs:
@@ -154,8 +160,19 @@ def document_freqs(topic_words, corpus_path):
                             doc_co_freqs[frozenset([words[i], words[j]])] = 1
     return doc_freqs, doc_co_freqs
 
+def ambig_v_disambig(top_len=TOPIC_LEN):
+    lst = ['30','100','250','500','750','1000']
+    for fn in lst:
+        name1 = 'gt_disambig_lambda/gt_disambig_' + fn + '.dat'
+        name2 = 'gt_ambig_lambda/gt_ambig_' + fn + '.dat'
+        print("comparing ambig and disambig for %s topics" % fn)
+        t1 = get_topics('mixed_wn_dict.txt', name1, top_len)
+        t2 = get_topics('mixed_wn_dict.txt', name2, top_len)
+        analyze_match_results(t1,t2)
+
 if __name__ == '__main__':
-    analyze_match_results()
+    # analyze_match_results()
+    ambig_v_disambig()
 
 """
 version using dicts that could work with expectation
