@@ -18,5 +18,6 @@ def get_topics(vocab_file, lambda_file, n):
             topic_words[vocab[temp[i][1]]] = temp[i][0]
 
         topics.append(topic_words)
+        # print topic_words
 
     return topics
