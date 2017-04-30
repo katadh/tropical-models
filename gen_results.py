@@ -26,8 +26,12 @@ def disambig_documents(doc_path, out_path):
     tree = et.parse(doc_path)
     root = tree.getroot()
 
-    vocab = get_vocab('wn_ambig_no_stop.txt')
-    topics = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', 150)
+    topics = {}
+    vocab = []
+    #vocab = get_vocab('mixed_wn_dict.txt')
+    #topics = get_topics.get_topics('mixed_wn_dict.txt', 'gt_disambig/gt_disambig_30.dat', 75)
+    #vocab = get_vocab('wn_ambig_no_stop.txt')
+    #topics = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', 75)
 
     all_results = []
     for doc in root.findall('text'):
@@ -41,6 +45,7 @@ def disambig_documents(doc_path, out_path):
 
 #takes in the document xml tree
 def disambig_document(doc, vocab, topics):
+    #print "in disambig document"
     sents = []
     word_locs = []
     for sent_tree in doc.findall('s'):
@@ -53,8 +58,8 @@ def disambig_document(doc, vocab, topics):
         doc_text += ' ' + sent
 
     extra_words = []
-    best_topic = topic_fitting.find_closest_topic(doc_text, vocab, topics)
-    extra_words = topic_fitting.get_n_best_words(30, best_topic)
+    #best_topic = topic_fitting.find_closest_topic(doc_text, vocab, topics, ambig=False)
+    #extra_words = topic_fitting.get_n_best_words(15, best_topic)
     print extra_words
 
     results = []
@@ -68,7 +73,10 @@ def disambig_document(doc, vocab, topics):
             #print word
             if index in sent_word_locs:
                 if synset is None:
-                    synset = baseline.max_lemma_count(word)
+                    print word, " has no synset"
+                    #synset = baseline.max_lemma_count(word)
+                    index += 1
+                    continue
                 if sent_word_locs[index][1] != word:
                     print "Incorrect matching!"
                 word_id = 'eng-30-' + str(synset.offset()).zfill(8) + '-' + synset.pos()
@@ -96,7 +104,8 @@ def get_sentence(sent_tree):
     return ' '.join(sentence), word_locs
 
 def disambiguate_sentence(sent, extras):
-    return disambiguate_new(sent, extra_words=extras, algorithm=max_similarity, similarity_option='jcn', similarity_data=sim_data)
+    return disambiguate_new(sent, algorithm=max_similarity, similarity_option='jcn', similarity_data=sim_data)
+    #return disambiguate_new(sent, extra_words=extras, algorithm=max_similarity, similarity_option='jcn', similarity_data=sim_data)
     #return disambiguate_new(sent, extra_words=extras)
 
 #def disambiguate_sentence(sent):
@@ -112,7 +121,7 @@ def disambiguate_sentence(sent, extras):
 #        result.append((word, res))
 #    return result
 
-#def disambiguate_sentence(sent):
+#def disambiguate_sentence(sent, extras):
 #    results = []
 #    for word in sent.split():
 #        if len(wn.synsets(word)) > 0:

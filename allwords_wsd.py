@@ -5,6 +5,10 @@
 # Copyright (C) 2014-2017 alvations
 # URL:
 # For license information, see LICENSE.md
+import sys
+import os
+import re
+import traceback
 
 from string import punctuation
 
@@ -26,6 +30,15 @@ Step 2: Iterates through the tokens and only disambiguate the content words.
 """
 
 stopwords = stopwords.words('english') + list(punctuation)
+stopwords.remove('is')
+stopwords.remove('are')
+stopwords.remove('was')
+stopwords.remove('had')
+stopwords.remove('being')
+stopwords.remove('were')
+stopwords.remove('been')
+stopwords.remove('has')
+stopwords.remove('be')
 
 def disambiguate(sentence, algorithm=simple_lesk,
                  context_is_lemmatized=False, similarity_option='path',
@@ -79,30 +92,30 @@ def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
         lemma_sentence = sentence # TODO: Miss out on POS specification, how to resolve?
     # print lemma_sentence
     if extra_words:
-        # print("changing sentence to add LDA words:")
-        # print(lemma_sentence)
+        #print("changing sentence to add LDA words:")
+        #print(lemma_sentence)
         lemma_sentence = lemma_sentence.rstrip('.') + ' ' + " ".join(extra_words)
-        # print(lemma_sentence)
+        #print(lemma_sentence)
     for word, lemma, pos in zip(surface_words, lemmas, morphy_poss):
         if lemma not in stopwords: # Checks if it is a content word
             try:
-                if '.' in lemma: # lemma is already disambiguated
+                if re.search(r'[a-z]+\.[nvsar]\.[0-9]{2}', lemma) != None: # lemma is already disambiguated
                     synset = wn.synset(lemma)
                     # print("single synset for %s" % lemma)
                 else:
                     syns = wn.synsets(lemma)
                     if len(syns) == 0:
-                        # print("no synsets for %s; returning None" % lemma)
+                        #print("no synsets for %s: returning None" % lemma)
                         synset = None
                     elif len(syns) == 1:
-                        # print("just one synset for %s; returning %s" % (lemma, syns[0]))
+                        #print("just one synset for %s: returning %s" % (lemma, syns[0]))
                         synset = syns[0]
                     elif algorithm == original_lesk: # Note: Original doesn't care about lemmas
                         # print("running original_lesk on %s" % lemma)
                         synset = algorithm(lemma_sentence, lemma)
                         # print("succeeded; returning %s" % synset)
                     elif algorithm == max_similarity:
-                        # print("running max_similarity on %s" % lemma)
+                        #print("running max_similarity on %s %s" % (lemma, pos))
                         synset = algorithm(lemma_sentence, lemma, pos=pos, option=similarity_option, data=similarity_data)
                         # print("succeeded at max_sim; returning %s" % synset)
                     else:
@@ -110,10 +123,18 @@ def disambiguate_new(sentence, algorithm=simple_lesk, extra_words=None,
                         synset = algorithm(lemma_sentence, lemma, pos=pos, context_is_lemmatized=True)
                         # print("succeeded; returning %s" % synset)
             except: # In case the content word is not in WordNet
+                #exc_type, exc_obj, exc_tb = sys.exc_info()
+                #fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                #print(exc_type, fname, exc_tb.tb_lineno)
+                print "threw error on: ", word, lemma, pos
+                tb = traceback.format_exc()
+                print tb
                 synset = '#NOT_IN_WN#'
                 # print("\ntry/except caught %s while trying alg %s and is returning #NOT_IN_WN#\n" % (lemma, algorithm.__name__))
         else:
+            #print lemma, " in stop words"
             synset = '#STOPWORD/PUNCTUATION#'
+
         if keepLemmas:
             tagged_sentence.append((word, lemma, synset))
         else:
