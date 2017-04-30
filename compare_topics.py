@@ -97,10 +97,8 @@ def analyze_match_results():
     ma = max(match_totals)
     print("max overlap percentage between two topics was %f" % ma)
 
-def topic_coherence(topic_words, corpus_path):
+def topic_coherence(topic_words, doc_freqs, doc_co_freqs):
     coherence = 0
-    #not enough memory to compute all document co frequencies ahead of time
-    doc_freqs, doc_co_freqs = document_freqs(topic_words, corpus_path)
     for i in range(len(topic_words)):
         for j in range(i+1, len(topic_words)):
             if frozenset([topic_words[i], topic_words[j]]) in doc_co_freqs and topic_words[j] in doc_freqs:
@@ -108,9 +106,29 @@ def topic_coherence(topic_words, corpus_path):
 
     return coherence
 
-def average_coherence(topic_set, corpus_path):
-    c = sum(topic_coherence(x.keys(), corpus_path) for x in topic_set)
-    return c*1./len(topic_set)
+def average_coherence(topic_list, corpus_path):
+    batch_size = 100
+    topic_words = []
+    topics_batch = []
+    coherences = []
+    for i in range(len(topic_list)):
+        topic_words.extend(topic_list[i].keys())
+        topics_batch.append(topic_list[i].keys())
+        if i % batch_size == 0:
+            #not enough memory to compute all document co frequencies ahead of time
+            doc_freqs, doc_co_freqs = document_freqs(topic_words, corpus_path)
+            coherences.extend([topic_coherence(topic, doc_freqs, doc_co_freqs) for topic in topics_batch])
+            topic_words = []
+            topics_batch = []
+    
+    #For cases where # of topics isn't divisible by batch size
+    doc_freqs, doc_co_freqs = document_freqs(topic_words, corpus_path)
+    coherences.extend([topic_coherence(topic, doc_freqs, doc_co_freqs) for topic in topics_batch])
+    topic_words = []
+    topics_batch = []
+
+    c = sum(coherences)
+    return c*1./len(topic_list)
 
 def document_freqs(topic_words, corpus_path):
     doc_freqs = {}
