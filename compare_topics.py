@@ -103,7 +103,8 @@ def topic_coherence(topic_words, corpus_path):
         doc_freqs, doc_co_freqs = document_freqs(topic_words, corpus_path)
         for i in range(len(topic_words)):
                 for j in range(i+1, len(topic_words)):
-                        coherence += log(doc_co_freqs[frozenset([topic_words[i], topic_words[j]])] * 1.0 / doc_freqs[topic_words[j]])
+                        if frozenset([topic_words[i], topic_words[j]]) in doc_co_freqs and topic_words[j] in doc_freqs:
+                                coherence += log(doc_co_freqs[frozenset([topic_words[i], topic_words[j]])] * 1.0 / doc_freqs[topic_words[j]])
 
         return coherence
                         
