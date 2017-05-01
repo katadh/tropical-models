@@ -166,13 +166,21 @@ def ambig_v_disambig(top_len=TOPIC_LEN):
         name1 = 'gt_disambig_lambda/gt_disambig_' + fn + '.dat'
         name2 = 'gt_ambig_lambda/gt_ambig_' + fn + '.dat'
         print("comparing ambig and disambig for %s topics" % fn)
-        t1 = get_topics('mixed_wn_dict.txt', name1, top_len)
-        t2 = get_topics('mixed_wn_dict.txt', name2, top_len)
+        t1 = get_topics.get_topics('mixed_wn_dict.txt', name1, top_len)
+        t2 = get_topics.get_topics('mixed_wn_dict.txt', name2, top_len)
         analyze_match_results(t1,t2)
+
+def ecology_coherence(top_len=TOPIC_LEN):
+    cpath = '../ecology_articles2/'
+    tamb = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', top_len)
+    print("average coherence for ambig ecology articles:", average_coherence(tamb, cpath))
+    tdisamb = get_topics.get_topics('synset_dict.txt', '8000_jcn.dat', top_len)
+    print("average coherence for disambig ecology articles:", average_coherence(tdisamb, cpath))
 
 if __name__ == '__main__':
     # analyze_match_results()
-    ambig_v_disambig()
+    # ambig_v_disambig()
+    ecology_coherence()
 
 """
 version using dicts that could work with expectation
