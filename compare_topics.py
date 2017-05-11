@@ -150,6 +150,20 @@ def average_coherence(topic_list, corpus_path):
     c = sum(coherences)
     return c*1./len(topic_list)
 
+def match_vs_disambig_words(best_matches, disambig_topics):
+    match_vs_disambig = []
+    for match in best_matches.items():
+        match_percent = match[1][0]
+        topic = disambig_topics[match[1][1]]
+        num_disambig = 0
+        for word in topic.keys():
+            if re.search(r'[a-z]+\.[nvsar]\.[0-9]{2}', word) != None:
+                num_disambig += 1
+        match_vs_disambig.append(match_percent, num_disambig)
+
+    return match_vs_disambig
+        
+
 def document_freqs(topic_words, corpus_path):
     doc_freqs = {}
     doc_co_freqs = {}
