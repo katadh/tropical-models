@@ -145,7 +145,7 @@ def load_object(file_path):
                 return pickle.load(object_file)
 
 def save_object(file_path, in_object):
-        with open(file_path) as object_file:
+        with open(file_path, 'w') as object_file:
                 pickle.dump(in_object, object_file)
                 
                                                         
