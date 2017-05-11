@@ -40,12 +40,14 @@ def compare_topic_sets_best_match(list1, list2):
         # print("top1:", top1)
         for top2 in list2:
             # print(top2)
+            index1 = list1.index(top1)
+            index2 = list2.index(top2)
             m = compare_two_topics(top1, top2)
-            if tuple(top1.items()) in best_matches.keys():
-                if m > best_matches[tuple(top1.items())][0]:
-                    best_matches[tuple(top1.items())] = (m, top2.items())
+            if index1 in best_matches.keys():
+                if m > best_matches[index1][0]:
+                    best_matches[index1] = (m, index2)
             else:
-                best_matches[tuple(top1.items())] = (m, top2.items())
+                best_matches[index1] = (m, index2)
             # if m != 0:
             #   print("topics: %s\n %s" % (top1, top2))
             #   print("similarity score: %f" % m)
