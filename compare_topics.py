@@ -1,11 +1,12 @@
 # compare lambda dat files from LDA output
 
-import get_topics
+from get_topics import get_topics
 from nltk.corpus import wordnet
 from numpy import average, median, log
 from math import sqrt
 
 import os
+import re
 
 TOPIC_LEN = 10
 
@@ -18,10 +19,19 @@ def compare_two_topics(topic1, topic2):
             if word1 == word2:
                 #print("got a match: %s and %s" % (word1, word2))
                 matches += 1
-            elif word1.split('.')[0] == word2:
+                break
+            elif re.search(r'[a-z]+\.[nvsar]\.[0-9]{2}', word1) != None and wordnet.synset(word1) in wordnet.synsets(word2):
                 matches += 1
-            elif word2.split('.')[0] == word1:
+                break
+            elif re.search(r'[a-z]+\.[nvsar]\.[0-9]{2}', word2) != None and wordnet.synset(word2) in wordnet.synsets(word1):
                 matches += 1
+                break
+            #elif word1.split('.')[0] == word2:
+            #    matches += 1
+            #    break
+            #elif word2.split('.')[0] == word1:
+            #    matches += 1
+            #    break
     return matches * 1./ TOPIC_LEN
 
 def compare_topic_sets_best_match(list1, list2):
@@ -32,16 +42,16 @@ def compare_topic_sets_best_match(list1, list2):
             # print(top2)
             m = compare_two_topics(top1, top2)
             if tuple(top1.items()) in best_matches.keys():
-                if m > best_matches[tuple(top1.items())]:
-                    best_matches[tuple(top1.items())] = m
+                if m > best_matches[tuple(top1.items())][0]:
+                    best_matches[tuple(top1.items())] = (m, top2.items())
             else:
-                best_matches[tuple(top1.items())] = m
+                best_matches[tuple(top1.items())] = (m, top2.items())
             # if m != 0:
             #   print("topics: %s\n %s" % (top1, top2))
             #   print("similarity score: %f" % m)
             # if m > 0:
             #   print("got a non-zero score")
-    return best_matches.values()
+    return best_matches
 
 def compare_topic_sets(list1, list2):
     match_totals = []
@@ -68,11 +78,11 @@ def strip_synsets(list1):
 def add_synsets(list1):
     new_list = []
     for topic in list1:
-        newtop = {}
+        newtop = topic
         for word in topic.keys():
             syns = wordnet.synsets(word)
-            if len(syns) == 0:
-                newtop[word] = topic[word]
+            #if len(syns) == 0:
+            #    newtop[word] = topic[word]
             for syn in syns:
                 newtop[syn.name()] = topic[word]
         new_list.append(newtop)
@@ -83,16 +93,17 @@ def add_synsets(list1):
 def analyze_match_results(list1=None, list2=None):
     #list1 = get_topics.get_topics('wn_ambiguous.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
     if list1 is None:
-        list1 = get_topics.get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
-        list1 = add_synsets(list1)
+        list1 = get_topics('wn_ambig_no_stop.txt', 'wn_ambig_no_stop_8000.dat', TOPIC_LEN)
+        #list1 = add_synsets(list1)
     if list2 is None:
-        list2 = get_topics.get_topics('synset_dict.txt', '8000_jcn.dat', TOPIC_LEN)
+        list2 = get_topics('synset_dict.txt', '8000_jcn.dat', TOPIC_LEN)
     # list1 = get_topics.get_topics('synset_dict.txt', 'comp1.dat', TOPIC_LEN)
     # list2 = get_topics.get_topics('synset_dict.txt', 'sci_mod.dat', TOPIC_LEN)
     #new_list2 = strip_synsets(list2)
     #match_totals = compare_topic_sets(newlist1, list2)
-    list2 = add_synsets(list2)
-    match_totals = compare_topic_sets_best_match(list1, list2)
+    #list1 = add_synsets(list1)
+    matches = compare_topic_sets_best_match(list1, list2)
+    match_totals = [match[0] for match in matches]
     print("length of match_totals is %d" % len(match_totals))
     # print(match_totals)
     #avg = average(match_totals) * sqrt(len(match_totals))
@@ -102,6 +113,7 @@ def analyze_match_results(list1=None, list2=None):
     print("median overlap percentage between topics from the two sets provided was %f" % med)
     ma = max(match_totals)
     print("max overlap percentage between two topics was %f" % ma)
+    return matches
 
 def topic_coherence(topic_words, doc_freqs, doc_co_freqs):
     coherence = 0
@@ -163,8 +175,8 @@ def document_freqs(topic_words, corpus_path):
 def ambig_v_disambig(top_len=TOPIC_LEN):
     lst = ['30','100','250','500','750','1000']
     for fn in lst:
-        name1 = 'gt_disambig_lambda/gt_disambig_' + fn + '.dat'
-        name2 = 'gt_ambig_lambda/gt_ambig_' + fn + '.dat'
+        name1 = 'gt_ambig/gt_ambig_' + fn + '.dat'
+        name2 = 'gt_disambig/gt_disambig_' + fn + '.dat'
         print("comparing ambig and disambig for %s topics" % fn)
         t1 = get_topics('mixed_wn_dict.txt', name1, top_len)
         t2 = get_topics('mixed_wn_dict.txt', name2, top_len)
