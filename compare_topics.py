@@ -105,7 +105,7 @@ def analyze_match_results(list1=None, list2=None):
     #match_totals = compare_topic_sets(newlist1, list2)
     #list1 = add_synsets(list1)
     matches = compare_topic_sets_best_match(list1, list2)
-    match_totals = [match[0] for match in matches]
+    match_totals = [match[0] for match in matches.values()]
     print("length of match_totals is %d" % len(match_totals))
     # print(match_totals)
     #avg = average(match_totals) * sqrt(len(match_totals))
