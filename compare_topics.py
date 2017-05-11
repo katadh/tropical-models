@@ -159,7 +159,7 @@ def match_vs_disambig_words(best_matches, disambig_topics):
         for word in topic.keys():
             if re.search(r'[a-z]+\.[nvsar]\.[0-9]{2}', word) != None:
                 num_disambig += 1
-        match_vs_disambig.append(match_percent, num_disambig)
+        match_vs_disambig.append((match_percent, num_disambig))
 
     return match_vs_disambig
         
